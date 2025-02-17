@@ -1,6 +1,6 @@
 from transformers import Trainer, TrainingArguments
 
-from src.data.load_dataset import load_t5_dataset
+from src.data.load_dataset import load_intent_classifier_dataset
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import load_t5_model_and_tokenizer, get_path_to
 
@@ -10,7 +10,7 @@ def train_model(output_dir):
     model, tokenizer, data_collator = load_t5_model_and_tokenizer()
 
     # Load dataset
-    train_dataloader, val_dataloader = load_t5_dataset()
+    train_dataloader, val_dataloader = load_intent_classifier_dataset()
 
     # Define Training Arguments
     training_args = TrainingArguments(
@@ -44,4 +44,4 @@ def train_model(output_dir):
     tokenizer.save_pretrained(output_dir)
 
 
-train_model(get_path_to(AssetPaths.T5_MODEL.value))
+train_model(get_path_to(AssetPaths.T5_INTENT_CLASSIFIER_MODEL.value))

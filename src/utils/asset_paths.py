@@ -3,6 +3,7 @@ from enum import Enum
 class AssetPaths(Enum):
     # Models
     T5_MODEL = 'models/t5_booking_model'
+    T5_INTENT_CLASSIFIER_MODEL = 'models/t5_intent_classifier_model'
 
     # Weights
 

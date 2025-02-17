@@ -2,7 +2,7 @@ from src.utils.helpers import load_t5_model_and_tokenizer
 import torch
 
 
-model, tokenizer, _ = load_t5_model_and_tokenizer(True)
+model, tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_MODEL.value)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
