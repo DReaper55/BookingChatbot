@@ -1,4 +1,4 @@
-from datasets import load_dataset
+from datasets import load_dataset, Dataset
 
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import load_t5_model_and_tokenizer, get_path_to, extract_text_and_intent, \
@@ -93,13 +93,13 @@ def load_intent_classifier_dataset():
 # Load and preprocess data for slot
 # extraction model
 # ..........................................
-def preprocess_slot_extract_fn(examples):
+def preprocess_fn(examples):
     inputs = examples["input"]
     targets = examples["output"]
 
     # Tokenize inputs and outputs
     model_inputs = tokenizer(inputs, padding="max_length", truncation=True, max_length=128)
-    labels = tokenizer(targets, padding="max_length", truncation=True, max_length=32)
+    labels = tokenizer(targets, padding="max_length", truncation=True, max_length=128)
 
     # Add labels to the model inputs
     model_inputs["labels"] = labels["input_ids"]
@@ -124,13 +124,48 @@ def load_slot_extraction_dataset():
 
     # Preprocess on-the-fly
     train_dataset = train_dataset.map(
-        preprocess_slot_extract_fn,
+        preprocess_fn,
         batched=True, batch_size=1000
     )
     dev_dataset = dev_dataset.map(
-        preprocess_slot_extract_fn,
+        preprocess_fn,
         batched=True, batch_size=1000
     )
 
     return train_dataset, dev_dataset
 
+
+# ..........................................
+# Load and preprocess data for multi-task
+# model
+# ..........................................
+def load_and_preprocess_data(path):
+    dataset = load_dataset("json", data_files=path, split="train")
+
+    processed_data = []
+    for item in dataset:
+        text_intent = extract_text_and_intent(item)
+        slots = extract_slots(item)
+
+        # Create examples for multi-task learning
+        processed_data.append({
+            "input": f"classify intent: {text_intent['text']}",
+            "output": text_intent["intent"]
+        })
+        processed_data.append({
+            "input": f"extract slots: {slots['input']}",
+            "output": slots["output"]
+        })
+        processed_data.append({
+            "input": item["input"],
+            "output": item["output"]
+        })
+
+    dataset = Dataset.from_list(processed_data)
+
+    dataset = dataset.map(
+        preprocess_fn,
+        batched=True, batch_size=1000
+    )
+
+    return dataset

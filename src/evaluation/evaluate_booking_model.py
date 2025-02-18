@@ -42,14 +42,10 @@ def generate_response(user_input, active_intent="NONE", slot_values={}):
 # print("Bot:", response)
 
 # Example 2: Train booking request
-# user_query = "I need train reservations from norwich to cambridge."
-# active_intent = "find_train"
+# user_query = "Hello, I am looking for a restaurant in Cambridge. I believe it is called Golden Wok"
+# active_intent = "find_restaurant"
 # slot_values = {
-#     "train-departure": ["Norwich"],
-#     "train-destination": ["Cambridge"],
-#     "train-day": ["Monday"],
-#     "train-arriveby": ["18:00"],
-#     "train-leaveat": ["8:00"],
+#     "restaurant-name": ["golden wok"],
 # }
 #
 # response = generate_response(user_query, active_intent, slot_values)
