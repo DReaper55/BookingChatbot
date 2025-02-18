@@ -26,5 +26,6 @@ def predict_intent_slot_response(text):
 
 
 user_input = "Hello, I am looking for a restaurant in Cambridge. I believe it is called Golden Wok"
+# user_input = "I need a train from Norwich to Cambridge on Monday."
 result = predict_intent_slot_response(user_input)
 print(result)
