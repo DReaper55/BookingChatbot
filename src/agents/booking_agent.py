@@ -1,55 +1,76 @@
-from transformers import T5Tokenizer, T5ForConditionalGeneration
-
-from src.utils.asset_paths import AssetPaths
-from src.utils.helpers import get_path_to
+from src.utils.helpers import reformat_text
 
 
-def load_model(model_path):
-    """Load a fine-tuned T5 model from a given path."""
-    model = T5ForConditionalGeneration.from_pretrained(model_path)
-    tokenizer = T5Tokenizer.from_pretrained(model_path)
-    return model, tokenizer
+# RAG-based Agent
+class BookingAgent:
+    def __init__(self, intent_model, intent_tok, slot_model, slot_tok, response_model, response_tok, retriever):
+        self.intent_model = intent_model
+        self.intent_tok = intent_tok
+        self.slot_model = slot_model
+        self.slot_tok = slot_tok
+        self.response_model = response_model
+        self.response_tok = response_tok
+        self.retriever = retriever  # Function to retrieve relevant data
 
-# Load models
-intent_model, intent_tokenizer = load_model(get_path_to(AssetPaths.T5_INTENT_CLASSIFIER_MODEL.value))
-slot_model, slot_tokenizer = load_model(get_path_to(AssetPaths.T5_SLOT_EXTRACTION_MODEL.value))
-response_model, response_tokenizer = load_model(get_path_to(AssetPaths.T5_BOOKING_MODEL.value))
+    def extract_intent(self, user_input):
+        """Use the intent classification model to get the user's intent."""
+        inputs = self.intent_tok(user_input, return_tensors="pt", padding=True, truncation=True)
+        output = self.intent_model.generate(**inputs)
+        return self.intent_tok.decode(output[0], skip_special_tokens=True)
 
-def generate_intent(user_input):
-    """Predict intent from user input."""
-    input_text = user_input
-    inputs = intent_tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
-    output = intent_model.generate(**inputs)
-    intent = intent_tokenizer.decode(output[0], skip_special_tokens=True)
-    return intent
+    def extract_slots(self, user_input):
+        """Use the slot extraction model to get slot values from the user input."""
+        inputs = self.slot_tok(user_input, return_tensors="pt", padding=True, truncation=True)
+        output = self.slot_model.generate(**inputs)
+        slot_output = self.slot_tok.decode(output[0], skip_special_tokens=True)
+        slots = {}
+        for pair in slot_output.split(", "):
+            if "=" in pair:
+                key, value = pair.split("=")
+                slots[key.strip()] = value.strip()
+        return slots
 
-def extract_slots(user_input):
-    """Extract slot values from user input."""
-    input_text = user_input
-    inputs = slot_tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
-    output = slot_model.generate(**inputs)
-    slots = slot_tokenizer.decode(output[0], skip_special_tokens=True)
-    return slots
+    def retrieve_information(self, intent, slots):
+        """Retrieve relevant data using the extracted intent and slots."""
+        if intent == "find_train":
+            return self.retriever.find_train(
+                train_day=slots.get("train-day"),
+                train_departure=slots.get("train-departure"),
+                train_destination=slots.get("train-destination")
+            )
+        return {}
 
-def generate_response(user_input, intent, slots):
-    """Generate a response based on user input, intent, and extracted slots."""
-    input_text = f"generate response: {user_input} Intent: {intent} Slots: {slots}"
-    inputs = response_tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
-    output = response_model.generate(**inputs)
-    response = response_tokenizer.decode(output[0], skip_special_tokens=True)
-    return response
+    def generate_response(self, user_input):
+            """Main agent function to process user input and generate a response."""
+            # Extract intent
+            intent = self.extract_intent(user_input)
 
-def agent_pipeline(user_input):
-    """Main agent function that processes a user input and returns a response."""
-    intent = generate_intent(user_input)
-    print(f"Intent: {intent}")
-    slots = extract_slots(user_input)
-    print(f"Slots: {slots}")
-    response = generate_response(user_input, intent, slots)
-    return response
+            # Extract slots
+            slots = self.extract_slots(user_input)
+
+            # Retrieve relevant data
+            retrieved_data = self.retrieve_information(intent, slots)
+
+            # Augment input with retrieved data
+            retrieved_text = " ".join([f"{key}: {value}" for key, value in retrieved_data.items()])
+            augmented_input = f"generate response: {user_input} Intent: {intent}. Slots: {', '.join([f'{k}={v}' for k, v in slots.items()])}. Retrieved: {retrieved_text}"
+
+            print(f'augmented_input 0: {augmented_input}')
+
+            augmented_input = reformat_text(augmented_input)
+
+            print(f'augmented_input 1: {augmented_input}')
+
+            inputs = self.response_tok(augmented_input, return_tensors="pt", padding=True, truncation=True)
+            output = self.response_model.generate(**inputs)
+
+            # Generate final response
+            return self.response_tok.decode(output[0], skip_special_tokens=True)
+
 
 # Example usage
 # user_input = "I need a train from Norwich to Cambridge on Monday."
-user_input = "Hello, I am looking for a restaurant in Cambridge. I believe it is called Golden Wok"
-response = agent_pipeline(user_input)
-print(f"Response: {response}")
+# # user_input = "Hello, I am looking for a restaurant in Cambridge. I believe it is called Golden Wok"
+# response = agent_pipeline(user_input)
+# print(f"Response: {response}")
+
