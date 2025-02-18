@@ -1,6 +1,6 @@
 from transformers import Trainer, TrainingArguments
 
-from src.data.load_dataset import load_t5_dataset
+from src.data.load_dataset import load_slot_extraction_dataset
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import load_t5_model_and_tokenizer, get_path_to
 
@@ -10,7 +10,19 @@ def train_model(output_dir):
     model, tokenizer, data_collator = load_t5_model_and_tokenizer()
 
     # Load dataset
-    train_dataloader, val_dataloader = load_t5_dataset()
+    train_dataloader, val_dataloader = load_slot_extraction_dataset()
+
+    # Take the first 3 samples from the dataset
+    # sample_batch = list(train_dataloader.take(3))
+    #
+    # # Print preprocessed examples
+    # for i, sample in enumerate(sample_batch):
+    #     decoded_input = tokenizer.decode(sample["input_ids"], skip_special_tokens=True)
+    #     decoded_target = tokenizer.decode(sample["labels"], skip_special_tokens=True)
+    #
+    #     print(f"\nSample {i+1} --------------------")
+    #     print("Decoded Input:", decoded_input)
+    #     print("Decoded Target (Expected Response):", decoded_target)
 
     # Define Training Arguments
     training_args = TrainingArguments(
@@ -44,4 +56,4 @@ def train_model(output_dir):
     tokenizer.save_pretrained(output_dir)
 
 
-train_model(get_path_to(AssetPaths.T5_MODEL.value))
+train_model(get_path_to(AssetPaths.T5_SLOT_EXTRACTION_MODEL.value))

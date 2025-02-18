@@ -33,6 +33,36 @@ def extract_text_and_intent(data):
     return {"text": text, "intent": intent}
 
 
+def extract_slots(data):
+    # Extract user input after "generate response:"
+    input_text = re.search(r"generate response:\s*(.*?)\s*Intent:", data["input"])
+    input_text = input_text.group(1).strip() if input_text else ""
+
+    # Extract slot-value pairs
+    slots_match = re.search(r"Slots:\s*(.*)", data["input"])
+    slots_text = slots_match.group(1).strip() if slots_match else ""
+
+    # Convert slots into dictionary
+    slots = {}
+    for slot in slots_text.split(", "):
+        if "=" in slot:
+            key, value = slot.split("=")
+            key, value = key.strip(), value.strip()
+
+            # Only add slot if its value appears in the input text
+            if value.lower() in input_text.lower():
+                slots[key] = value
+
+    # Convert slots to output format
+    slot_output = ", ".join([f"{k}={v}" for k, v in slots.items()])
+
+    # Add to processed dataset
+    return {
+        "input": input_text,
+        "output": slot_output
+    }
+
+
 def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
     from transformers import T5ForConditionalGeneration, T5Tokenizer, DataCollatorForSeq2Seq
 

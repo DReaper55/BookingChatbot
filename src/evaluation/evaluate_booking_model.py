@@ -1,8 +1,9 @@
+from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import load_t5_model_and_tokenizer
 import torch
 
 
-model, tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_MODEL.value)
+model, tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_BOOKING_MODEL.value)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
@@ -41,15 +42,15 @@ def generate_response(user_input, active_intent="NONE", slot_values={}):
 # print("Bot:", response)
 
 # Example 2: Train booking request
-user_query = "I need train reservations from norwich to cambridge."
-active_intent = "find_train"
-slot_values = {
-    "train-departure": ["Norwich"],
-    "train-destination": ["Cambridge"],
-    "train-day": ["Monday"],
-    "train-arriveby": ["18:00"],
-    "train-leaveat": ["8:00"],
-}
-
-response = generate_response(user_query, active_intent, slot_values)
-print("Bot:", response)
+# user_query = "I need train reservations from norwich to cambridge."
+# active_intent = "find_train"
+# slot_values = {
+#     "train-departure": ["Norwich"],
+#     "train-destination": ["Cambridge"],
+#     "train-day": ["Monday"],
+#     "train-arriveby": ["18:00"],
+#     "train-leaveat": ["8:00"],
+# }
+#
+# response = generate_response(user_query, active_intent, slot_values)
+# print("Bot:", response)

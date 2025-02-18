@@ -3,7 +3,7 @@ from src.utils.helpers import load_t5_model_and_tokenizer
 import torch
 
 
-model, tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_INTENT_CLASSIFIER_MODEL.value)
+model, tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_SLOT_EXTRACTION_MODEL.value)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
@@ -26,7 +26,7 @@ def generate_response(user_input):
     return response
 
 
-# user_query = "Can you book me a table for 11:00 on Friday?"
-#
-# response = generate_response(user_query)
-# print("Intent:", response)
+user_query = "Hello, I am looking for a restaurant in Cambridge. I believe it is called Golden Wok"
+
+response = generate_response(user_query)
+print("Slots:", response)
