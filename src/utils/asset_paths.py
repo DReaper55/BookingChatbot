@@ -15,3 +15,7 @@ class AssetPaths(Enum):
     TRAINING_DATASET = 'data/processed/train.json'
     VALIDATION_DATASET = 'data/processed/dev.json'
     TEST_DATASET = 'data/processed/test.json'
+
+    RAW_SYNTHETIC_DATASET = 'data/raw/synthetic.txt'
+    SYNTHETIC_DATASET = 'data/processed/synthetic.json'
+

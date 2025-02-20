@@ -63,7 +63,6 @@ def extract_slots(data):
     }
 
 def reformat_text(input_text):
-        import re
         # Extract user input
         user_input_match = re.search(r"generate response:\s*(.*?)\s*Intent:", input_text)
         user_input = user_input_match.group(1).strip() if user_input_match else ""

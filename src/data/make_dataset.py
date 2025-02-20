@@ -71,4 +71,24 @@ def format_dataset(dataset_dir="test", output_path="output.json"):
     print(f"Processed {len(formatted_data)} dialogue pairs.")
 
 
+def reformat_records(file_path):
+    records = []
+    with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
+        current_record = {}
+        for line in file:
+            if line.startswith("Input:"):
+                if current_record:
+                    records.append(current_record)
+                current_record = {"input": line[len("Input:"):].strip()}
+            elif line.startswith("Output:"):
+                current_record["output"] = line[len("Output:"):].strip()
+        if current_record:
+            records.append(current_record)
+
+    with open(get_path_to(AssetPaths.SYNTHETIC_DATASET.value), 'w', encoding='utf-8') as json_file:
+        json.dump(records, json_file, indent=4)
+
+
+reformat_records(get_path_to(AssetPaths.RAW_SYNTHETIC_DATASET.value))
+
 # format_dataset(dataset_dir="test", output_path=AssetPaths.TEST_DATASET.value)

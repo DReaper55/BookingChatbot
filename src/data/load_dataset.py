@@ -1,8 +1,9 @@
 from datasets import load_dataset, Dataset
+from torch.utils.data import random_split, DataLoader
 
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import load_t5_model_and_tokenizer, get_path_to, extract_text_and_intent, \
-    extract_slots
+    extract_slots, reformat_text
 
 # Load T5 tokenizer
 _, tokenizer, _ = load_t5_model_and_tokenizer()
@@ -169,3 +170,35 @@ def load_and_preprocess_data(path):
     )
 
     return dataset
+
+
+# ..........................................
+# Load and preprocess data for RAG-based
+# training
+# ..........................................
+def load_rag_dataset(split_ratio=0.8):
+    # Load local dataset in streaming mode
+    dataset = load_dataset(
+        "json",
+        data_files=get_path_to(AssetPaths.SYNTHETIC_DATASET.value),
+        split="train",
+        streaming=False
+    ).map(lambda example: {"input": reformat_text(example['input'])})
+
+    # Preprocess on-the-fly
+    dataset = dataset.map(
+        preprocess_fn,
+        batched=True, batch_size=500
+    )
+
+    # Calculate the lengths of the train and eval sets
+    train_length = int(len(dataset) * split_ratio)
+    eval_length = len(dataset) - train_length
+
+    # Split the dataset
+    train_dataset, eval_dataset = random_split(dataset, [train_length, eval_length])
+
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=32, shuffle=False)
+
+    return train_dataloader.dataset, eval_dataloader.dataset
