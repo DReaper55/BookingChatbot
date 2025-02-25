@@ -32,28 +32,43 @@ class BookingAgent:
 
     def retrieve_information(self, intent, slots):
         """Retrieve relevant data using the extracted intent and slots."""
-        if intent == "find_train":
-            return self.retriever.find_train(
-                train_day=slots.get("train-day"),
-                train_departure=slots.get("train-departure"),
-                train_destination=slots.get("train-destination")
-            )
-        if intent == "find_product":
-            category = slots.get("product-type")
 
-            if category == "food":
-                return self.retriever.find_food(
-                    food_type=slots.get("food-type"),
-                    restaurant_name=slots.get("restaurant-name")
-                )
+        action = intent.split("_", 1)[0]
+        product_type = slots.get("product-type")  # Extract product type
 
-            if category == "shirt":
-                return self.retriever.find_shirt(
-                    features=slots.get("feature"),
-                    type=slots.get("type"),
-                    size=slots.get("size"),
-                )
+        if not product_type:
+            return {}  # Return empty if product type is missing
+
+        if action == "find":
+            return self.retriever.find_product(product_type, **slots)
+
+        if action == "buy":
+            return self.retriever.buy_product(product_type, **slots)
+
         return {}
+
+        # return self.retriever
+        # if intent == "find_train":
+        #     return self.retriever.find_train(
+        #         train_day=slots.get("train-day"),
+        #         train_departure=slots.get("train-departure"),
+        #         train_destination=slots.get("train-destination")
+        #     )
+        # if intent == "find_product":
+        #     category = slots.get("product-type")
+        #
+        #     if category == "food":
+        #         return self.retriever.find_food(
+        #             food_type=slots.get("food-type"),
+        #             restaurant_name=slots.get("restaurant-name")
+        #         )
+        #
+        #     if category == "shirt":
+        #         return self.retriever.find_shirt(
+        #             features=slots.get("feature"),
+        #             type=slots.get("type"),
+        #             size=slots.get("size"),
+        #         )
 
     def generate_response(self, user_input):
             """Main agent function to process user input and generate a response."""
@@ -63,6 +78,8 @@ class BookingAgent:
             # Extract slots
             slots = self.extract_slots(user_input)
 
+            print(f'augmented_input 0: {intent}, {slots}')
+
             # Retrieve relevant data
             retrieved_data = self.retrieve_information(intent, slots)
 
@@ -70,11 +87,7 @@ class BookingAgent:
             retrieved_text = " ".join([f"{key}: {value}" for key, value in retrieved_data.items()])
             augmented_input = f"generate response: {user_input} Intent: {intent}. Slots: {', '.join([f'{k}={v}' for k, v in slots.items()])}. Retrieved: {retrieved_text}"
 
-            print(f'augmented_input 0: {augmented_input}')
-
             augmented_input = reformat_text(augmented_input)
-
-            print(f'augmented_input 1: {augmented_input}')
 
             inputs = self.response_tok(augmented_input, return_tensors="pt", padding=True, truncation=True)
             output = self.response_model.generate(**inputs, max_length=128, num_beams=5, no_repeat_ngram_size=3)

@@ -61,6 +61,60 @@ def generate_synthetic_data():
     return dataset
 
 
+def generate_synthetic_find_product_data(num_samples=10):
+    product_types = ["shirt", "shoe", "jacket", "accessory", "pants", "electronics", "dress", "toy", "book", "furniture"]
+    features = ["red", "blue", "cotton", "leather", "waterproof", "wireless", "bodycon", "loose-fit", "gaming", "handmade"]
+    sizes = ["XS", "S", "M", "L", "XL", "XXL"]
+    brands = ["Nike", "Adidas", "Sony", "Apple", "Zara", "Gucci", "Ikea"]
+    locations = ["Lagos", "New York", "London", "Paris", "Tokyo"]
+
+    dataset = []
+
+    for _ in range(num_samples):
+        product_type = random.choice(product_types)
+        selected_features = random.sample(features, k=random.randint(1, 3))
+        size = random.choice(sizes) if product_type in ["shirt", "jacket", "pants", "dress", "shoe"] else None
+        brand = random.choice(brands) if random.random() > 0.5 else None
+        location = random.choice(locations) if random.random() > 0.7 else None
+        available = random.randint(0, 20)
+        price = f"${random.randint(20, 500)}"
+
+        query = f"I want to buy a {' '.join(selected_features)} {product_type}"
+        if size:
+            query += f" in size {size}"
+        if brand:
+            query += f" from {brand}"
+        if location:
+            query += f" in {location}"
+
+        input_text = f"generate response: {query}. Intent: find_product. Slots: product-type={product_type}, "
+        input_text += ", ".join([f"feature={feature}" for feature in selected_features])
+        if size:
+            input_text += f", size={size}"
+
+        retrieved_text = f"Retrieved: TYPE=<TYPE>, "
+        retrieved_text += ", ".join(["FEATURE=<FEATURE>" for _ in selected_features])
+        if size:
+            retrieved_text += f", SIZE=<SIZE>"
+        retrieved_text += f", AVAILABLE=<AVAILABLE>, PRICE=<PRICE>"
+        if brand:
+            retrieved_text += f", BRAND=<BRAND>"
+        if location:
+            retrieved_text += f", LOCATION=<LOCATION>"
+
+        output_text = f"The <FEATURE> <TYPE> is available for <PRICE>. We have <AVAILABLE> in stock. Would you like to proceed with the purchase?"
+
+        dataset.append({"input": input_text + " " + retrieved_text, "output": output_text})
+
+    return dataset
+
+
+# Generate RAG-based dataset for products
+# data = generate_synthetic_find_product_data(5)
+# for item in data:
+#     print(item, "\n")
+
+
 # Generate hotel dataset
 # synthetic_dataset = generate_synthetic_data()
 
