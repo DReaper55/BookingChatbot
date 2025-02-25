@@ -2,12 +2,12 @@ from enum import Enum
 
 class AssetPaths(Enum):
     # Models
-    T5_MODEL = 'models/t5_model'
     T5_BOOKING_MODEL = 'models/t5_booking_model'
     T5_INTENT_CLASSIFIER_MODEL = 'models/t5_intent_classifier_model'
     T5_SLOT_EXTRACTION_MODEL = 'models/t5_slot_extraction_model'
     T5_MULTITASK_BOOKING_MODEL = 'models/t5_multitask_booking_model'
     T5_CONTEXT_TRANSLATOR_MODEL = 'models/t5_context_translator_model'
+    T5_SLOT_FILLER_MODEL = 'models/t5_slot_filler_model'
 
     # Weights
 
@@ -25,3 +25,6 @@ class AssetPaths(Enum):
     SYNTHETIC_DATASET = 'data/processed/modified_synthetic.json'
     RAW_CONTEXT_TRANSLATOR_DATASET = 'data/raw/context_translator_dataset.json'
     CONTEXT_TRANSLATOR_DATASET = 'data/processed/context_translator_dataset.json'
+
+    RAW_SLOT_FILLER_DATASET = 'data/raw/slot_filling_dataset.json'
+    SLOT_FILLER_DATASET = 'data/processed/slot_filler_dataset.json'

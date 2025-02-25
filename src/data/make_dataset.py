@@ -72,6 +72,10 @@ def format_dataset(dataset_dir="test", output_path="output.json"):
     print(f"Processed {len(formatted_data)} dialogue pairs.")
 
 
+# ..............................................
+# Process the data.txt dataset.
+# Convert it to a json
+# ..............................................
 def reformat_records(file_path):
     records = []
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
@@ -90,6 +94,12 @@ def reformat_records(file_path):
         json.dump(records, json_file, indent=4)
 
 
+# ..............................................
+# Process the RAG dataset.
+# The output for buy_product should specifically
+# use "buy" or "purchase" in it's sentence
+# instead of "I'm looking for"
+# ..............................................
 def modify_rag_for_buyproduct_json(file_path):
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
         data = json.load(file)
@@ -104,8 +114,11 @@ def modify_rag_for_buyproduct_json(file_path):
     with open(get_path_to(AssetPaths.PROCESSED_RAG_DATASET.value), 'w') as file:
         json.dump(data, file, indent=4)
 
-
-def load_and_preprocess_data(file_path):
+# ..............................................
+# Process the context_translator_dataset
+# Join all the conversations to form an input
+# ..............................................
+def load_and_preprocess_data(file_path, output_path):
     with open(file_path, "r", encoding="utf-8", errors='ignore') as f:
         data = json.load(f)
 
@@ -113,13 +126,46 @@ def load_and_preprocess_data(file_path):
     random.shuffle(data)
 
     # Extract input (conversation) and output (structured task)
-    formatted_data = [{"input": " ".join(d["conversation"]), "output": d["structured_task"]} for d in data]
+    # formatted_data = [{"input": " ".join(d["conversation"]), "output": d["structured_task"]} for d in data]
+    formatted_data = [{"input": " ".join(d["input"]), "output": d["output"]} for d in data]
 
-    with open(get_path_to(AssetPaths.CONTEXT_TRANSLATOR_DATASET.value), 'w') as file:
+    with open(output_path, 'w') as file:
         json.dump(formatted_data, file, indent=4)
 
 
-load_and_preprocess_data(get_path_to(AssetPaths.RAW_CONTEXT_TRANSLATOR_DATASET.value))
+# ..............................................
+# Process the context_translator_dataset
+# Create the slot-filler dataset by splitting
+# the conversations to get a turn-based convo
+# ..............................................
+def process_conversations(input_file, output_file):
+    with open(input_file, "r", encoding="utf-8", errors='ignore') as file:
+        dataset = json.load(file)
+
+    structured_data = []
+
+    for entry in dataset:
+        conversation = entry["conversation"]
+        collected_exchanges = []
+
+        for i in range(0, len(conversation) - 1, 2):  # Process user-bot pairs
+            collected_exchanges.append(conversation[i])  # User input
+            if i + 1 < len(conversation):  # Ensure there is a bot response
+                bot_response = conversation[i + 1]
+                structured_data.append({
+                    "input": collected_exchanges.copy(),
+                    "output": bot_response.replace("Bot: ", "")
+                })
+
+    with open(output_file, "w", encoding="utf-8") as output_file:
+        json.dump(structured_data, output_file, indent=2, ensure_ascii=False)
+
+    print(f"Processed data saved to {output_file}")
+
+
+# process_conversations(get_path_to(AssetPaths.RAW_CONTEXT_TRANSLATOR_DATASET.value), get_path_to(AssetPaths.SLOT_FILLER_DATASET.value))
+
+load_and_preprocess_data(get_path_to(AssetPaths.RAW_SLOT_FILLER_DATASET.value), get_path_to(AssetPaths.SLOT_FILLER_DATASET.value))
 
 # modify_rag_for_buyproduct_json(get_path_to(AssetPaths.RAW_RAG_DATASET.value))
 

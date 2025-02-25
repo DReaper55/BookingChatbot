@@ -3,7 +3,7 @@ from src.utils.helpers import load_t5_model_and_tokenizer
 import torch
 
 
-model, tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_CONTEXT_TRANSLATOR_MODEL.value)
+model, tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_SLOT_FILLER_MODEL.value)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
@@ -13,7 +13,7 @@ def generate_response(user_input):
     """
     Generates a response based on user input, intent.
     """
-    user_input = f"translate context: {user_input}"
+    user_input = f"ask question: {user_input}"
     # Tokenize input
     inputs = tokenizer(user_input, return_tensors="pt", padding=True, truncation=True, max_length=512)
     inputs = {k: v.to(device) for k, v in inputs.items()}

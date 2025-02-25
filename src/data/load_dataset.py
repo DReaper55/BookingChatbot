@@ -43,9 +43,9 @@ def load_booking_dataset():
     return train_dataset, dev_dataset
 
 
-def preprocess_fn(examples, process_for_context=False):
-    if process_for_context:
-        inputs = [f"translate conversation: {conv}" for conv in examples["input"]]
+def preprocess_fn(examples, prepend_input=None):
+    if prepend_input is not None:
+        inputs = [f"{prepend_input}: {conv}" for conv in examples["input"]]
     else:
         inputs = examples["input"]
 
@@ -243,7 +243,35 @@ def load_context_translation_dataset(split_ratio=.8):
         split="train",
         streaming=False,
     ).map(
-        lambda example: preprocess_fn(example, True),
+        lambda example: preprocess_fn(example, 'translate conversation'),
+        batched=True, batch_size=500
+    )
+
+    # Calculate the lengths of the train and eval sets
+    train_length = int(len(dataset) * split_ratio)
+    eval_length = len(dataset) - train_length
+
+    # Split the dataset
+    train_dataset, eval_dataset = random_split(dataset, [train_length, eval_length])
+
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=32, shuffle=False)
+
+    return train_dataloader.dataset, eval_dataloader.dataset
+
+
+# ..........................................
+# Load and preprocess data for slot
+# filling dataset
+# ..........................................
+def load_slot_filler_dataset(split_ratio=.8):
+    dataset = load_dataset(
+        "json",
+        data_files=get_path_to(AssetPaths.SLOT_FILLER_DATASET.value),
+        split="train",
+        streaming=False,
+    ).map(
+        lambda example: preprocess_fn(example, 'ask question'),
         batched=True, batch_size=500
     )
 

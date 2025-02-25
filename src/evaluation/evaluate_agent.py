@@ -21,5 +21,5 @@ response_model, response_tokenizer = load_model(get_path_to(AssetPaths.T5_BOOKIN
 agent = BookingAgent(intent_model, intent_tokenizer, slot_model, slot_tokenizer, response_model, response_tokenizer, Retriever())
 
 # Example user input
-user_input = "I'm looking for a bag"
+user_input = "Hey there"
 response = agent.generate_response(user_input)
