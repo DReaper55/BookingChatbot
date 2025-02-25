@@ -105,7 +105,23 @@ def modify_rag_for_buyproduct_json(file_path):
         json.dump(data, file, indent=4)
 
 
-modify_rag_for_buyproduct_json(get_path_to(AssetPaths.RAW_RAG_DATASET.value))
+def load_and_preprocess_data(file_path):
+    with open(file_path, "r", encoding="utf-8", errors='ignore') as f:
+        data = json.load(f)
+
+    # Shuffle dataset for randomness
+    random.shuffle(data)
+
+    # Extract input (conversation) and output (structured task)
+    formatted_data = [{"input": " ".join(d["conversation"]), "output": d["structured_task"]} for d in data]
+
+    with open(get_path_to(AssetPaths.CONTEXT_TRANSLATOR_DATASET.value), 'w') as file:
+        json.dump(formatted_data, file, indent=4)
+
+
+load_and_preprocess_data(get_path_to(AssetPaths.RAW_CONTEXT_TRANSLATOR_DATASET.value))
+
+# modify_rag_for_buyproduct_json(get_path_to(AssetPaths.RAW_RAG_DATASET.value))
 
 # reformat_records(get_path_to(AssetPaths.RAW_SYNTHETIC_DATASET.value))
 

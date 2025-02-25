@@ -43,12 +43,16 @@ def load_booking_dataset():
     return train_dataset, dev_dataset
 
 
-def preprocess_fn(examples):
-    inputs = examples["input"]
+def preprocess_fn(examples, process_for_context=False):
+    if process_for_context:
+        inputs = [f"translate conversation: {conv}" for conv in examples["input"]]
+    else:
+        inputs = examples["input"]
+
     targets = examples["output"]
 
     # Tokenize inputs and outputs
-    model_inputs = tokenizer(inputs, padding="max_length", truncation=True, max_length=128)
+    model_inputs = tokenizer(inputs, padding="max_length", truncation=True, max_length=256)
     labels = tokenizer(targets, padding="max_length", truncation=True, max_length=128)
 
     # Add labels to the model inputs
@@ -212,6 +216,34 @@ def load_rag_dataset(split_ratio=0.8, for_booking_finetune=True, for_intent_fine
     # Preprocess on-the-fly
     dataset = dataset.map(
         preprocess_fn,
+        batched=True, batch_size=500
+    )
+
+    # Calculate the lengths of the train and eval sets
+    train_length = int(len(dataset) * split_ratio)
+    eval_length = len(dataset) - train_length
+
+    # Split the dataset
+    train_dataset, eval_dataset = random_split(dataset, [train_length, eval_length])
+
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=32, shuffle=False)
+
+    return train_dataloader.dataset, eval_dataloader.dataset
+
+
+# ..........................................
+# Load and preprocess data for context
+# translation training
+# ..........................................
+def load_context_translation_dataset(split_ratio=.8):
+    dataset = load_dataset(
+        "json",
+        data_files=get_path_to(AssetPaths.CONTEXT_TRANSLATOR_DATASET.value),
+        split="train",
+        streaming=False,
+    ).map(
+        lambda example: preprocess_fn(example, True),
         batched=True, batch_size=500
     )
 

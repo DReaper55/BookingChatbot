@@ -26,7 +26,7 @@ def generate_response(user_input):
     return response
 
 
-user_query = "I need a pink summer dress for hot weather"
+user_query = "User: I'm looking for a handbag. Bot: Do you have a preferred brand? User: Michael Kors. Bot: What color do you prefer? User: brown. Bot: What material or style do you prefer? User: canvas. Bot: I found several Michael Kors handbags in brown with canvas style. What's your budget? User: Under $250."
 
 response = generate_response(user_query)
 print("Slots:", response)
