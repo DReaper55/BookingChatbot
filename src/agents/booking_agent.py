@@ -26,7 +26,7 @@ class BookingAgent:
         slots = {}
         for pair in slot_output.split(", "):
             if "=" in pair:
-                key, value = pair.split("=")
+                key, value = pair.split("=", 1)
                 slots[key.strip()] = value.strip()
         return slots
 
@@ -38,6 +38,21 @@ class BookingAgent:
                 train_departure=slots.get("train-departure"),
                 train_destination=slots.get("train-destination")
             )
+        if intent == "find_product":
+            category = slots.get("product-type")
+
+            if category == "food":
+                return self.retriever.find_food(
+                    food_type=slots.get("food-type"),
+                    restaurant_name=slots.get("restaurant-name")
+                )
+
+            if category == "shirt":
+                return self.retriever.find_shirt(
+                    features=slots.get("feature"),
+                    type=slots.get("type"),
+                    size=slots.get("size"),
+                )
         return {}
 
     def generate_response(self, user_input):
@@ -62,15 +77,7 @@ class BookingAgent:
             print(f'augmented_input 1: {augmented_input}')
 
             inputs = self.response_tok(augmented_input, return_tensors="pt", padding=True, truncation=True)
-            output = self.response_model.generate(**inputs)
+            output = self.response_model.generate(**inputs, max_length=128, num_beams=5, no_repeat_ngram_size=3)
 
             # Generate final response
             return self.response_tok.decode(output[0], skip_special_tokens=True)
-
-
-# Example usage
-# user_input = "I need a train from Norwich to Cambridge on Monday."
-# # user_input = "Hello, I am looking for a restaurant in Cambridge. I believe it is called Golden Wok"
-# response = agent_pipeline(user_input)
-# print(f"Response: {response}")
-

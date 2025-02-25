@@ -26,7 +26,7 @@ def generate_response(user_input):
     return response
 
 
-user_query = "Hello, I am looking for a restaurant in Cambridge. I believe it is called Golden Wok"
+user_query = "I need a pink summer dress for hot weather"
 
 response = generate_response(user_query)
 print("Slots:", response)

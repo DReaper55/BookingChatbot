@@ -26,7 +26,7 @@ def generate_response(user_input):
     return response
 
 
-# user_query = "Can you book me a table for 11:00 on Friday?"
-#
-# response = generate_response(user_query)
-# print("Intent:", response)
+user_query = "Can you tell me about the Apple Watch Series 9?"
+
+response = generate_response(user_query)
+print("Intent:", response)

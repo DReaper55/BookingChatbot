@@ -1,19 +1,37 @@
+import itertools
+
 from transformers import Trainer, TrainingArguments
 
-from src.data.load_dataset import load_slot_extraction_dataset
+from src.data.load_dataset import load_slot_extraction_dataset, load_rag_dataset
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import load_t5_model_and_tokenizer, get_path_to
 
 
 def train_model(output_dir):
     # Load model
-    model, tokenizer, data_collator = load_t5_model_and_tokenizer()
+    model, tokenizer, data_collator = load_t5_model_and_tokenizer(True, get_path_to(AssetPaths.T5_SLOT_EXTRACTION_MODEL.value))
 
     # Load dataset
-    train_dataloader, val_dataloader = load_slot_extraction_dataset()
+    # train_dataloader, val_dataloader = load_slot_extraction_dataset()
+    train_dataloader, val_dataloader = load_rag_dataset(for_slot_finetune=True)
 
     # Take the first 3 samples from the dataset
     # sample_batch = list(train_dataloader.take(3))
+    #
+    # # Print preprocessed examples
+    # for i, sample in enumerate(sample_batch):
+    #     decoded_input = tokenizer.decode(sample["input_ids"], skip_special_tokens=True)
+    #     decoded_target = tokenizer.decode(sample["labels"], skip_special_tokens=True)
+    #
+    #     print(f"\nSample {i+1} --------------------")
+    #     print("Decoded Input:", decoded_input)
+    #     print("Decoded Target (Expected Response):", decoded_target)
+
+    # def take_samples(dataloader, n):
+    #     return list(itertools.islice(dataloader, n))
+    #
+    # # Take the first 3 samples from the eval DataLoader
+    # sample_batch = take_samples(val_dataloader, 20)
     #
     # # Print preprocessed examples
     # for i, sample in enumerate(sample_batch):
@@ -32,8 +50,6 @@ def train_model(output_dir):
         num_train_epochs=3,
         save_steps=500,
         save_total_limit=2,
-        # logging_dir="./logs",
-        # logging_steps=100,
         evaluation_strategy="epoch",
         save_strategy="epoch",
         # max_steps=10,
@@ -47,7 +63,7 @@ def train_model(output_dir):
         train_dataset=train_dataloader,
         eval_dataset=val_dataloader,
         tokenizer=tokenizer,
-        # data_collator=data_collator
+        data_collator=data_collator
     )
 
     # Train

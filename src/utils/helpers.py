@@ -30,7 +30,7 @@ def extract_text_and_intent(data):
     intent_match = re.search(r"Intent:\s*([\w_]+)", input_text, re.IGNORECASE)
     intent = intent_match.group(1) if intent_match else ""
 
-    return {"text": text, "intent": intent}
+    return {"input": text, "output": intent}
 
 
 def extract_slots(data):
@@ -39,14 +39,15 @@ def extract_slots(data):
     input_text = input_text.group(1).strip() if input_text else ""
 
     # Extract slot-value pairs
-    slots_match = re.search(r"Slots:\s*(.*)", data["input"])
+    # slots_match = re.search(r"Slots:\s*(.*)", data["input"])
+    slots_match = re.search(r"Slots:\s*(.*?)(?:Retrieved:|$)", data["input"])
     slots_text = slots_match.group(1).strip() if slots_match else ""
 
     # Convert slots into dictionary
     slots = {}
     for slot in slots_text.split(", "):
         if "=" in slot:
-            key, value = slot.split("=")
+            key, value = slot.split("=", 1)
             key, value = key.strip(), value.strip()
 
             # Only add slot if its value appears in the input text

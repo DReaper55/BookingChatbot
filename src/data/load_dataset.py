@@ -43,23 +43,22 @@ def load_booking_dataset():
     return train_dataset, dev_dataset
 
 
-# ..........................................
-# Load and preprocess data for intent
-# classification model
-# ..........................................
-def preprocess_intent_class_fn(examples):
-    inputs = examples["text"]
-    targets = examples["intent"]
+def preprocess_fn(examples):
+    inputs = examples["input"]
+    targets = examples["output"]
 
     # Tokenize inputs and outputs
     model_inputs = tokenizer(inputs, padding="max_length", truncation=True, max_length=128)
-    labels = tokenizer(targets, padding="max_length", truncation=True, max_length=32)
+    labels = tokenizer(targets, padding="max_length", truncation=True, max_length=128)
 
     # Add labels to the model inputs
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
 
-
+# ..........................................
+# Load and preprocess data for intent
+# classification model
+# ..........................................
 def load_intent_classifier_dataset():
     # Load local dataset in streaming mode
     train_dataset = load_dataset(
@@ -78,11 +77,11 @@ def load_intent_classifier_dataset():
 
     # Preprocess on-the-fly
     train_dataset = train_dataset.map(
-        preprocess_intent_class_fn,
+        preprocess_fn,
         batched=True, batch_size=1000
     )
     dev_dataset = dev_dataset.map(
-        preprocess_intent_class_fn,
+        preprocess_fn,
         batched=True, batch_size=1000
     )
 
@@ -94,18 +93,6 @@ def load_intent_classifier_dataset():
 # Load and preprocess data for slot
 # extraction model
 # ..........................................
-def preprocess_fn(examples):
-    inputs = examples["input"]
-    targets = examples["output"]
-
-    # Tokenize inputs and outputs
-    model_inputs = tokenizer(inputs, padding="max_length", truncation=True, max_length=128)
-    labels = tokenizer(targets, padding="max_length", truncation=True, max_length=128)
-
-    # Add labels to the model inputs
-    model_inputs["labels"] = labels["input_ids"]
-    return model_inputs
-
 
 def load_slot_extraction_dataset():
     # Load local dataset in streaming mode
@@ -140,7 +127,7 @@ def load_slot_extraction_dataset():
 # Load and preprocess data for multi-task
 # model
 # ..........................................
-def load_and_preprocess_data(path):
+def load_and_preprocess_data(path, split_dataset=False):
     dataset = load_dataset("json", data_files=path, split="train")
 
     processed_data = []
@@ -150,8 +137,8 @@ def load_and_preprocess_data(path):
 
         # Create examples for multi-task learning
         processed_data.append({
-            "input": f"classify intent: {text_intent['text']}",
-            "output": text_intent["intent"]
+            "input": f"classify intent: {text_intent['input']}",
+            "output": text_intent["output"]
         })
         processed_data.append({
             "input": f"extract slots: {slots['input']}",
@@ -169,6 +156,19 @@ def load_and_preprocess_data(path):
         batched=True, batch_size=1000
     )
 
+    if split_dataset:
+        # Calculate the lengths of the train and eval sets
+        train_length = int(len(dataset) * .8)
+        eval_length = len(dataset) - train_length
+
+        # Split the dataset
+        train_dataset, eval_dataset = random_split(dataset, [train_length, eval_length])
+
+        train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+        eval_dataloader = DataLoader(eval_dataset, batch_size=32, shuffle=False)
+
+        return train_dataloader.dataset, eval_dataloader.dataset
+
     return dataset
 
 
@@ -176,14 +176,38 @@ def load_and_preprocess_data(path):
 # Load and preprocess data for RAG-based
 # training
 # ..........................................
-def load_rag_dataset(split_ratio=0.8):
+def load_rag_dataset(split_ratio=0.8, for_booking_finetune=True, for_intent_finetune=False, for_slot_finetune=False):
+    dataset = None
+
     # Load local dataset in streaming mode
-    dataset = load_dataset(
-        "json",
-        data_files=get_path_to(AssetPaths.SYNTHETIC_DATASET.value),
-        split="train",
-        streaming=False
-    ).map(lambda example: {"input": reformat_text(example['input'])})
+    if for_booking_finetune:
+        dataset = load_dataset(
+            "json",
+            data_files=get_path_to(AssetPaths.SYNTHETIC_DATASET.value),
+            split="train",
+            streaming=False
+        ).map(lambda example: {"input": reformat_text(example['input'])})
+
+    if for_slot_finetune:
+        dataset = load_dataset(
+            "json",
+            data_files=get_path_to(AssetPaths.SYNTHETIC_DATASET.value),
+            split="train",
+            streaming=False
+        ).map(extract_slots)
+
+
+    if for_intent_finetune:
+        dataset = load_dataset(
+            "json",
+            data_files=get_path_to(AssetPaths.SYNTHETIC_DATASET.value),
+            split="train",
+            streaming=False
+        ).map(extract_text_and_intent)
+
+
+    if dataset is None:
+        return
 
     # Preprocess on-the-fly
     dataset = dataset.map(

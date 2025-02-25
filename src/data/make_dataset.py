@@ -1,5 +1,6 @@
 import json
 import os
+import random
 
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import get_path_to
@@ -89,6 +90,23 @@ def reformat_records(file_path):
         json.dump(records, json_file, indent=4)
 
 
-reformat_records(get_path_to(AssetPaths.RAW_SYNTHETIC_DATASET.value))
+def modify_rag_for_buyproduct_json(file_path):
+    with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
+        data = json.load(file)
+
+    for entry in data:
+        input_text = entry.get("input", "")
+        if "Intent: buy_product" in input_text and "generate response: I'm looking for" in input_text:
+            choice = random.choice(["I want to buy", "I want to purchase"])
+            new_input_text = input_text.replace("generate response: I'm looking for", f"generate response: {choice}")
+            entry["input"] = new_input_text
+
+    with open(get_path_to(AssetPaths.PROCESSED_RAG_DATASET.value), 'w') as file:
+        json.dump(data, file, indent=4)
+
+
+modify_rag_for_buyproduct_json(get_path_to(AssetPaths.RAW_RAG_DATASET.value))
+
+# reformat_records(get_path_to(AssetPaths.RAW_SYNTHETIC_DATASET.value))
 
 # format_dataset(dataset_dir="test", output_path=AssetPaths.TEST_DATASET.value)
