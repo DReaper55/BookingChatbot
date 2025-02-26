@@ -10,9 +10,10 @@ from src.services.products.shirt_retrieval_service import ShirtRetrievalService
 from src.services.bookings.train_retrieval_service import TrainRetrievalService
 from src.services.products.shoe_retrieval_service import ShoeRetrievalService
 from src.services.products.toy_retrieval_service import ToyRetrievalService
+from src.utils.singleton_meta import SingletonMeta
 
 
-class RetrievalService:
+class RetrievalService(metaclass=SingletonMeta):
     """Service class responsible for retrieving different types of products."""
 
     # .....................................
