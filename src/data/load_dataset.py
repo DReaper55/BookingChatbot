@@ -8,6 +8,7 @@ from src.utils.helpers import load_t5_model_and_tokenizer, get_path_to, extract_
 # Load T5 tokenizer
 _, tokenizer, _ = load_t5_model_and_tokenizer()
 
+
 # ..........................................
 # Load and preprocess data for booking model
 # ..........................................
@@ -23,6 +24,7 @@ def preprocess_booking_function(examples):
         max_length=128
     )
 
+
 def load_booking_dataset():
     # Load local dataset in streaming mode
     train_dataset = load_dataset(
@@ -33,12 +35,11 @@ def load_booking_dataset():
     ).map(preprocess_booking_function, batched=True, batch_size=1000)
 
     dev_dataset = load_dataset(
-            "json",
-            data_files=get_path_to(AssetPaths.VALIDATION_DATASET.value),
-            split="train",
-            streaming=False
+        "json",
+        data_files=get_path_to(AssetPaths.VALIDATION_DATASET.value),
+        split="train",
+        streaming=False
     ).map(preprocess_booking_function, batched=True, batch_size=1000)
-
 
     return train_dataset, dev_dataset
 
@@ -59,6 +60,7 @@ def preprocess_fn(examples, prepend_input=None):
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
 
+
 # ..........................................
 # Load and preprocess data for intent
 # classification model
@@ -73,10 +75,10 @@ def load_intent_classifier_dataset():
     ).map(extract_text_and_intent)
 
     dev_dataset = load_dataset(
-            "json",
-            data_files=get_path_to(AssetPaths.VALIDATION_DATASET.value),
-            split="train",
-            streaming=False
+        "json",
+        data_files=get_path_to(AssetPaths.VALIDATION_DATASET.value),
+        split="train",
+        streaming=False
     ).map(extract_text_and_intent)
 
     # Preprocess on-the-fly
@@ -90,7 +92,6 @@ def load_intent_classifier_dataset():
     )
 
     return train_dataset, dev_dataset
-
 
 
 # ..........................................
@@ -108,10 +109,10 @@ def load_slot_extraction_dataset():
     ).map(extract_slots)
 
     dev_dataset = load_dataset(
-            "json",
-            data_files=get_path_to(AssetPaths.VALIDATION_DATASET.value),
-            split="train",
-            streaming=False
+        "json",
+        data_files=get_path_to(AssetPaths.VALIDATION_DATASET.value),
+        split="train",
+        streaming=False
     ).map(extract_slots)
 
     # Preprocess on-the-fly
@@ -177,6 +178,46 @@ def load_and_preprocess_data(path, split_dataset=False):
 
 
 # ..........................................
+# Load and preprocess data for multi-task
+# feature extraction model
+# ..........................................
+def load_feature_extraction_data():
+    import json
+
+    dataset = load_dataset("json", data_files=get_path_to(AssetPaths.FEATURE_EXTRACTION_DATASET.value), split="train")
+
+    processed_data = []
+    for item in dataset:
+        text = item["input"]
+        slots = json.dumps(item["slots"])  # Convert slots to JSON string
+
+        # Create examples for multi-task learning
+        processed_data.append({"input": f"extract slot: {text}", "output": slots})
+        processed_data.append({"input": f"retrieve category: {text}", "output": item["category"]})
+        processed_data.append(
+            {"input": f"extract features: {text}", "output": f"{slots}, category: {item['category']}"})
+
+    dataset = Dataset.from_list(processed_data)
+
+    dataset = dataset.map(
+        preprocess_fn,
+        batched=True, batch_size=500
+    )
+
+    # Calculate the lengths of the train and eval sets
+    train_length = int(len(dataset) * .8)
+    eval_length = len(dataset) - train_length
+
+    # Split the dataset
+    train_dataset, eval_dataset = random_split(dataset, [train_length, eval_length])
+
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=32, shuffle=False)
+
+    return train_dataloader.dataset, eval_dataloader.dataset
+
+
+# ..........................................
 # Load and preprocess data for RAG-based
 # training
 # ..........................................
@@ -200,7 +241,6 @@ def load_rag_dataset(split_ratio=0.8, for_booking_finetune=True, for_intent_fine
             streaming=False
         ).map(extract_slots)
 
-
     if for_intent_finetune:
         dataset = load_dataset(
             "json",
@@ -208,7 +248,6 @@ def load_rag_dataset(split_ratio=0.8, for_booking_finetune=True, for_intent_fine
             split="train",
             streaming=False
         ).map(extract_text_and_intent)
-
 
     if dataset is None:
         return

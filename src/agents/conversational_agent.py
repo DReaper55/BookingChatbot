@@ -15,7 +15,8 @@ class ConversationalAgent(metaclass=SingletonMeta):
         self.__session_service = SessionService()
         self.__state_service = StateService()
 
-    def _is_greeting(self, user_message):
+    @staticmethod
+    def _is_greeting(user_message):
         """Detects if the user is greeting the bot."""
         greetings = {"hi", "hello", "hey", "good morning", "good afternoon", "good evening"}
         return user_message.lower() in greetings
@@ -35,10 +36,7 @@ class ConversationalAgent(metaclass=SingletonMeta):
             else:
                 self.__state_service.update_state(user_id, ConversationStates.SLOT_FILLING.value)
 
-        print(f"State 1: {self.__state_service.get_state(user_id)}")
-
-        print(self.__session_service.get_context(user_id))
-
+        # Keep requesting for more information
         if self.__state_service.get_state(user_id) == ConversationStates.SLOT_FILLING.value:
             response = self.__slot_filler.generate_response(self.__session_service.get_context(user_id))
             self.__session_service.add_turn(user_id, ConversationSpeaker.BOT.value, response)
@@ -49,6 +47,7 @@ class ConversationalAgent(metaclass=SingletonMeta):
             else:
                 return response
 
+        # Summarize all received information and create a task
         if self.__state_service.get_state(user_id) == ConversationStates.CONTEXT_TRANSLATOR.value:
             task = self.__context_translator.generate_response(self.__session_service.get_context(user_id))
             user_message = task
@@ -56,6 +55,7 @@ class ConversationalAgent(metaclass=SingletonMeta):
 
         print(f"Task: {user_message}")
 
+        # Perform task
         if self.__state_service.get_state(user_id) == ConversationStates.BOOKING.value:
             # Get the first sentence of the last conversation as the task
             structured_task = user_message.split(".")[0] + "."  # Extract first sentence
@@ -66,7 +66,7 @@ class ConversationalAgent(metaclass=SingletonMeta):
 
             # Reset state and session after booking is complete
             self.__state_service.reset_state(user_id)
-            self.__session_service.reset_session(user_id, structured_task)
+            # self.__session_service.reset_session(user_id, structured_task)
 
             return booking_response + " What would you like me to do next?"
 

@@ -127,10 +127,10 @@ def load_and_preprocess_data(file_path, output_path):
 
     # Extract input (conversation) and output (structured task)
     # formatted_data = [{"input": " ".join(d["conversation"]), "output": d["structured_task"]} for d in data]
-    formatted_data = [{"input": " ".join(d["input"]), "output": d["output"]} for d in data]
+    # formatted_data = [{"input": " ".join(d["input"]), "output": d["output"]} for d in data]
 
     with open(output_path, 'w') as file:
-        json.dump(formatted_data, file, indent=4)
+        json.dump(data, file, indent=4)
 
 
 # ..............................................
@@ -165,7 +165,7 @@ def process_conversations(input_file, output_file):
 
 # process_conversations(get_path_to(AssetPaths.RAW_CONTEXT_TRANSLATOR_DATASET.value), get_path_to(AssetPaths.SLOT_FILLER_DATASET.value))
 
-# load_and_preprocess_data(get_path_to(AssetPaths.RAW_SLOT_FILLER_DATASET.value), get_path_to(AssetPaths.SLOT_FILLER_DATASET.value))
+load_and_preprocess_data(get_path_to(AssetPaths.RAW_FEATURE_EXTRACTION_DATASET.value), get_path_to(AssetPaths.FEATURE_EXTRACTION_DATASET.value))
 
 # modify_rag_for_buyproduct_json(get_path_to(AssetPaths.RAW_RAG_DATASET.value))
 
