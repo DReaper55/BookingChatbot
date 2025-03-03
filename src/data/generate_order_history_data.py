@@ -1,16 +1,13 @@
 import json
 import random
 import uuid
-from pymongo import MongoClient
 from collections import defaultdict
 
+from src.repository.mongodb_service import DatabaseService
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import get_path_to
+from src.utils.mongo_collections import MongoCollection
 
-# MongoDB setup
-client = MongoClient("mongodb://localhost:27017/")
-db = client["booking-chatbot"]
-orders_collection = db["user_orders"]
 
 # Load product data
 def load_data(json_path):
@@ -71,10 +68,12 @@ def generate_order_history(products):
 
 # Store order history in MongoDB
 def store_orders_in_mongo(user_orders):
-    orders_collection.delete_many({})  # Clear previous data
+    db_service = DatabaseService()
+
+    db_service.delete_many(MongoCollection.USER_ORDERS.value, {})  # Clear previous data
 
     for user_id, data in user_orders.items():
-        orders_collection.insert_one({
+        db_service.insert_one(MongoCollection.USER_ORDERS.value, {
             "user_id": user_id,
             "user": data["user"],
             "orders": data["orders"]
@@ -95,7 +94,7 @@ def create_order_history(json_path):
 
 
 def get_user_orders(user_id):
-    result = orders_collection.find_one({"user_id": user_id})
+    result = DatabaseService().find_one(MongoCollection.USER_ORDERS.value, {"user_id": user_id})
     return result if result else None
 
 

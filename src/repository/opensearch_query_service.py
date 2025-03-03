@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 from src.services.recommendation_service import get_cf_recommendations
 from src.utils.env_keys import EnvKeys
+from src.utils.mongo_collections import MongoCollection
 
 load_dotenv()
 
@@ -14,7 +15,7 @@ class ProductsRetrievalService:
     def __init__(self,
                  mongo_uri=os.getenv(EnvKeys.MONGO_HOST.value),
                  mongo_db=os.getenv(EnvKeys.MONGO_DB.value),
-                 mongo_collection=os.getenv(EnvKeys.MONGO_COLLECTION.value),
+                 mongo_collection=MongoCollection.PRODUCTS.value,
                  opensearch_host="localhost",
                  opensearch_port=os.getenv(EnvKeys.OPENSEARCH_PORT.value),
                  opensearch_index=os.getenv(EnvKeys.OPENSEARCH_INDEX_NAME.value),
@@ -211,8 +212,10 @@ class ProductsRetrievalService:
 
         filtered_products = get_best_product(results)[:10]
 
-        # Step 2: Use collaborative filtering to get top 5 recommendations
+        # Use collaborative filtering to get top 5 recommendations
         # recommended_products = get_cf_recommendations(get_user_id(), filtered_products)
+        #
+        # print(recommended_products)
 
         product = filtered_products[0]
 

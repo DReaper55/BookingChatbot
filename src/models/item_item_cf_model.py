@@ -1,15 +1,12 @@
 import json
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from pymongo import MongoClient
 
+from src.repository.mongodb_service import DatabaseService
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import get_path_to
+from src.utils.mongo_collections import MongoCollection
 
-# MongoDB setup
-client = MongoClient("mongodb://localhost:27017/")
-db = client["booking-chatbot"]
-item_similarity_collection = db["item_similarity"]
 
 # Load the dataset
 def load_data(json_path):
@@ -45,7 +42,9 @@ def compute_similarity(product_ids, text_features):
 
 # Store similarity matrix in MongoDB
 def store_similarity_in_mongo(product_ids, similarity_matrix):
-    item_similarity_collection.delete_many({})  # Clear previous data
+    db_service = DatabaseService()
+
+    db_service.delete_many(MongoCollection.ITEM_SIMILARITY.value, {})  # Clear previous data
 
     for idx, product_id in enumerate(product_ids):
         similar_items = {
@@ -54,7 +53,7 @@ def store_similarity_in_mongo(product_ids, similarity_matrix):
         }
 
         # Store in MongoDB
-        item_similarity_collection.insert_one({
+        db_service.insert_one(MongoCollection.ITEM_SIMILARITY.value, {
             "product_id": product_id,
             "similar_products": similar_items
         })
@@ -77,7 +76,7 @@ def train_similarity_model(json_path):
 
 
 def get_similar_products(product_id, top_n=5):
-    result = item_similarity_collection.find_one({"product_id": product_id})
+    result = DatabaseService().find_one(MongoCollection.ITEM_SIMILARITY.value, {"product_id": product_id})
     if result:
         sorted_similar = sorted(result["similar_products"].items(), key=lambda x: x[1], reverse=True)
         return sorted_similar[:top_n]

@@ -1,17 +1,13 @@
 import json
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from pymongo import MongoClient
 from collections import defaultdict
 
+from src.repository.mongodb_service import DatabaseService
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import get_path_to
+from src.utils.mongo_collections import MongoCollection
 
-# MongoDB setup
-client = MongoClient("mongodb://localhost:27017/")
-db = client["booking-chatbot"]
-similarity_collection = db["user_similarity"]
-orders_collection = db["user_orders"]
 
 # Load product data
 def load_data(json_path):
@@ -54,7 +50,9 @@ def compute_user_similarity(user_profiles):
 
 # Store user similarity in MongoDB
 def store_similarity_in_mongo(user_ids, similarity_matrix):
-    similarity_collection.delete_many({})  # Clear previous data
+    db_service = DatabaseService()
+
+    db_service.delete_many(MongoCollection.USER_SIMILARITY.value, {})  # Clear previous data
 
     for idx, user_id in enumerate(user_ids):
         similar_users = {
@@ -63,7 +61,7 @@ def store_similarity_in_mongo(user_ids, similarity_matrix):
         }
 
         # Store in MongoDB
-        similarity_collection.insert_one({
+        db_service.insert_one(MongoCollection.USER_SIMILARITY.value, {
             "user": user_id,
             "similar_users": similar_users
         })
@@ -89,8 +87,10 @@ def get_user_id_map():
     """
     Retrieve user_id and user mapping from user_orders collection.
     """
+    db_service = DatabaseService()
+
     user_map = {}
-    for record in orders_collection.find({}, {"user_id": 1, "user": 1}):
+    for record in db_service.find_many(MongoCollection.USER_ORDERS.value, {}, {"user_id": 1, "user": 1}):
         user_map[record["user"]] = record["user_id"]
     return user_map
 
@@ -98,15 +98,18 @@ def update_user_similarity():
     """
     Update user_similarity collection by replacing "user" with corresponding "user_id".
     """
+    db_service = DatabaseService()
+
     user_map = get_user_id_map()
 
-    for record in similarity_collection.find({}):
+    for record in db_service.find_many(MongoCollection.USER_SIMILARITY.value, {}):
         user = record["user"]
         if user in user_map:
             user_id = user_map[user]
 
             # Update the record in MongoDB
-            similarity_collection.update_one(
+            db_service.update_one(
+                MongoCollection.USER_SIMILARITY.value,
                 {"_id": record["_id"]},
                 {"$set": {"user_id": user_id}}
             )
@@ -114,7 +117,7 @@ def update_user_similarity():
 
 
 def get_similar_users(user_id, top_n=5):
-    result = similarity_collection.find_one({"user": user_id})
+    result = DatabaseService().find_one(MongoCollection.USER_SIMILARITY.value, {"user": user_id})
     if result:
         sorted_similar = sorted(result["similar_users"].items(), key=lambda x: x[1], reverse=True)
         return sorted_similar[:top_n]
