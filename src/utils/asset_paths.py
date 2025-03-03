@@ -32,3 +32,6 @@ class AssetPaths(Enum):
 
     RAW_SLOT_FILLER_DATASET = 'data/raw/slot_filling_dataset.json'
     SLOT_FILLER_DATASET = 'data/processed/slot_filler_dataset.json'
+
+    RAW_ECOM_DATASET = 'data/raw/ecommerce_products.json'
+    ECOM_DATASET = 'data/processed/ecommerce_products.json'

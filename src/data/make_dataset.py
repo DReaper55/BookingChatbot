@@ -163,9 +163,38 @@ def process_conversations(input_file, output_file):
     print(f"Processed data saved to {output_file}")
 
 
+# ..............................................
+# Process the ecommerce_products dataset.
+# Format the features to be a list instead of dict
+# ..............................................
+def format_product_data(input_file, output_file):
+    def format_data(product):
+       # Extract and remove "size" from "features"
+       size = product["features"].pop("size", [])
+
+       # Convert remaining "features" values into a list
+       features = list(product["features"].values())
+
+       # Update the product structure
+       product["size"] = size
+       product["features"] = features
+
+       return product
+
+    with open(input_file, "r", encoding="utf-8", errors='ignore') as file:
+        dataset = json.load(file)
+
+    formatted_data_list = [format_data(data) for data in dataset]
+
+    with open(output_file, "w", encoding="utf-8") as output_file:
+        json.dump(formatted_data_list, output_file, indent=2, ensure_ascii=False)
+
+
 # process_conversations(get_path_to(AssetPaths.RAW_CONTEXT_TRANSLATOR_DATASET.value), get_path_to(AssetPaths.SLOT_FILLER_DATASET.value))
 
-load_and_preprocess_data(get_path_to(AssetPaths.RAW_FEATURE_EXTRACTION_DATASET.value), get_path_to(AssetPaths.FEATURE_EXTRACTION_DATASET.value))
+# load_and_preprocess_data(get_path_to(AssetPaths.RAW_FEATURE_EXTRACTION_DATASET.value), get_path_to(AssetPaths.FEATURE_EXTRACTION_DATASET.value))
+
+# format_product_data(get_path_to(AssetPaths.RAW_ECOM_DATASET.value), get_path_to(AssetPaths.ECOM_DATASET.value))
 
 # modify_rag_for_buyproduct_json(get_path_to(AssetPaths.RAW_RAG_DATASET.value))
 

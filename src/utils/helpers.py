@@ -1,3 +1,5 @@
+import ast
+import json
 import os
 import re
 
@@ -99,6 +101,37 @@ def reformat_text(input_text):
 
         return formatted_text
 
+
+def format_extracted_features(input_string):
+    # Add braces to make it a valid dictionary string
+    input_string = "{" + input_string + "}"
+
+    # Fix missing double quotes around keys
+    input_string = re.sub(r'(\w+):', r'"\1":', input_string)
+
+    # Fix missing double quotes around unquoted string values (words without spaces)
+    input_string = re.sub(r': (\w+)([,}])', r': "\1"\2', input_string)
+
+    product_info = json.loads(input_string)
+
+    # Replace whitespaces with hyphens in the features list
+    product_info["features"] = [feature.replace(" ", "-") for feature in product_info["features"]]
+
+    formatted_info = []
+
+    # Iterate through the dictionary items
+    for key, value in product_info.items():
+        if key == "features":
+            # For features, add each feature separately
+            for feature in value:
+                formatted_info.append(f"feature-{feature}={feature}")
+        else:
+            # For other key-value pairs, add them directly
+            formatted_info.append(f"{key}={value}")
+
+    # Join the formatted key-value pairs with commas
+    return ", ".join(formatted_info)
+
 def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
     from transformers import T5ForConditionalGeneration, T5Tokenizer, DataCollatorForSeq2Seq
 
@@ -114,3 +147,19 @@ def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
     model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME).to(device)
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
     return model, tokenizer, data_collator
+
+
+# input_string = '"author": null, "brand": "PayPal", "features": ["standard delivery", "yellow", "paypal", "casual"], "price": "$120", "product-type": "dress", "quantity": null, "size": "extra-large", "title": null, category: dress'
+# res = format_extracted_features(input_string)
+#
+# slots = {}
+# for pair in res.split(", "):
+#     if "=" in pair:
+#         key, value = pair.split("=", 1)
+#         slots[key.strip()] = value.strip()
+#
+# # List to store the values of keys that contain the word 'feature'
+# feature_values = [value for key, value in slots.items() if 'feature' in key]
+#
+# print(slots)
+# print(feature_values)

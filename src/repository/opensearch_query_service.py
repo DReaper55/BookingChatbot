@@ -4,6 +4,7 @@ import os
 
 from dotenv import load_dotenv
 
+from src.services.recommendation_service import get_cf_recommendations
 from src.utils.env_keys import EnvKeys
 
 load_dotenv()
@@ -45,20 +46,22 @@ class ProductsRetrievalService:
                     'number_of_shards': 4
                 }
             },
-            # "mappings": {
-            #     "properties": {
-            #         "name": {"type": "text"},
-            #         "features": {
-            #             "properties": {
-            #                 "size": {"type": "text"},
-            #                 "material": {"type": "text"},
-            #                 "pages": {"type": "float"},
-            #             }
-            #         }
-            #     }
-            # }
+            "mappings": {
+                "properties": {
+                    "name": {"type": "text"},
+                    "brand": {"type": "text"},
+                    "category": {"type": "keyword"},
+                    "features": {"type": "keyword"},  # Treat features as keyword for filtering
+                    "size": {"type": "keyword"},  # Ensure size is indexed correctly
+                    "price": {"type": "float"},
+                    "stock": {"type": "integer"},
+                    "rating": {"type": "float"},
+                    "reviews": {"type": "nested"}
+                }
+            }
         }
 
+        # self.opensearch_client.indices.delete(index=self.index_name)
 
         # Ensure OpenSearch index exists
         if not self.opensearch_client.indices.exists(index=self.index_name):
@@ -69,11 +72,13 @@ class ProductsRetrievalService:
         for product in self.collection.find():
             product_id = str(product["_id"])  # Convert ObjectId to string
             document = {
-                "product_id": product_id,
+                "id": product_id,
+                "product_id": product.get("product_id"),
                 "name": product.get("name"),
                 "brand": product.get("brand"),
                 "category": product.get("category"),
                 "features": product.get("features", []),
+                "size": product.get("size", []),
                 "price": product.get("price"),
                 "stock": product.get("stock"),
                 "rating": product.get("rating"),
@@ -101,14 +106,46 @@ class ProductsRetrievalService:
             must_clauses.append({
                 "multi_match": {
                     "query": query,
-                    "fields": ["name^3", "brand^2", "category", "features"],
-                    "type": "best_fields"
+                    "fields": ["category", "brand", "features", "size"],
+                    "type": "best_fields",
+                    "fuzziness": "AUTO"
                 }
             })
 
+        # print(f'Filters: {filters}')
+
+        should_clauses = []
+
         if filters:
             for key, value in filters.items():
-                must_clauses.append({"term": {key: value.lower()}})
+                if key == "features":
+                    for feature in value:
+                        should_clauses.append({
+                            "match": {
+                                "features": {
+                                    "query": feature,
+                                    "fuzziness": "AUTO"
+                                }
+                            }
+                        })
+                elif key == "size":
+                    should_clauses.append({
+                        "match": {
+                            "size": {
+                                "query": value,
+                                "fuzziness": "AUTO"
+                            }
+                        }
+                    })
+                else:
+                    must_clauses.append({
+                        "match": {
+                            key: {
+                                "query": value,
+                                "fuzziness": "AUTO"
+                            }
+                        }
+                    })
 
         search_query = {
             "_source": {
@@ -116,10 +153,12 @@ class ProductsRetrievalService:
             },
             "query": {
                 "bool": {
-                    "must": must_clauses
+                    "must": must_clauses,
+                    "should": should_clauses,
+                    "minimum_should_match": 1  # At least one should match
                 }
             },
-            "size": size
+            "size": 20
         }
 
         try:
@@ -133,52 +172,90 @@ class ProductsRetrievalService:
         """
         Generic method to find a product based on the product type and filters.
         """
-        brand = kwargs.get("brand")
-        item_name = kwargs.get("type")  # Specific product name or type (e.g., "polo" for shirts)
-        size = kwargs.get("size")
-        color = kwargs.get("color")
-        features = kwargs.get("features", [])
+        author = kwargs['filter'].get("author", None)
+        price = kwargs['filter'].get("price", None)
+        quantity = kwargs['filter'].get("quantity", 1)
+        title = kwargs['filter'].get("title", None)
+        brand = kwargs['filter'].get("brand", None)
+        size = kwargs['filter'].get("size", None)
+        category = kwargs['filter'].get("category", product_type)
+
+        # List to store the values of keys that contain the word 'feature'
+        features = [value for key, value in kwargs['filter'].items() if 'feature' in key]
 
         # Build filters dynamically
         filters = {
             "category": product_type,
+            "author": author,
+            "price": price,
+            "quantity": quantity,
+            "title": title,
             "brand": brand,
             "size": size,
-            "color": color
         }
 
-        # Remove None values from filters
-        filters = {k: v for k, v in filters.items() if v}
+        # Remove None and 'null' values from filters
+        filters = {k: v for k, v in filters.items() if v and v != 'null'}
 
         # If features exist, add them as a terms filter
         if features:
             filters["features"] = features
 
         # Perform search
-        results = (self.search_products(item_name, filters=filters))
+        results = (self.search_products(category, filters=filters))
+
+        print(f"Search result: {results}")
 
         if not results:
             return {"available": "NONE"}
 
-        product = results[0]
+        filtered_products = get_best_product(results)[:10]
+
+        # Step 2: Use collaborative filtering to get top 5 recommendations
+        # recommended_products = get_cf_recommendations(get_user_id(), filtered_products)
+
+        product = filtered_products[0]
 
         return {
             "available": str(product.get("stock", "NONE")),
             "price": f"${product.get('price', 'NONE')}",
             "size": product.get("size", "NONE"),
-            "color": product.get("color", "NONE"),
             "brand": product.get("brand", "NONE"),
             "features": product.get("features", [])
         }
 
 
+def get_user_id():
+    return "ce81c9bd-fa1d-4ddc-a61d-6b9722977194" # Sophia
+
+def get_best_product(products):
+    """
+    Rank products based on multiple factors:
+    - Matching score
+    - Stock availability
+    - Product rating
+    - Review count
+    """
+    return sorted(
+        products,
+        key=lambda p: (
+            p.get("stock", 0) > 0,  # Prioritize available products
+            p.get("rating", 0),  # Higher ratings are better
+            len(p.get("reviews", [])),  # More reviews = better trust
+        ),
+        reverse=True
+    )
+
 # Example Usage
-# if __name__ == "__main__":
-#     product_service = ProductsRetrievalService()
-#
+if __name__ == "__main__":
+    product_service = ProductsRetrievalService()
+
 #     Sync MongoDB to OpenSearch
 #     product_service.sync_mongo_to_opensearch()
-#
+
+    filt = {'author': 'null', 'brand': 'Wrangler', 'feature-blue': 'blue', 'feature-denim': 'denim', 'feature-regular': 'regular', 'price': 'null', 'product-type': 'null', 'quantity': 'null', 'size': 'M', 'title': 'null', 'category': 'pants'}
+
 #     Search for "Nike Shoes"
-#     results = product_service.search_products("Nike Shoes", filters={"category": "shoe"})
-#     print(results)
+#     results = product_service.search_products("Adidas Shirt", filt)
+    results = product_service.retrieve_formatted_result("pants", filter=filt)
+    print(results)
