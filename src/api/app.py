@@ -1,26 +1,16 @@
 import subprocess
-
 from fastapi import FastAPI
-from pydantic import BaseModel
 
-from src.agents.conversational_agent import ConversationalAgent
+from http_routes import router as http_router
+from ws_routes import router as ws_router
+
 from src.repository.opensearch_query_service import ProductsRetrievalService
 
 app = FastAPI()
-agent = ConversationalAgent()  # Keep a running instance
 
-class UserInput(BaseModel):
-    user_id: str
-    message: str
-
-@app.post("/chat")
-def chat(user: UserInput):
-    response = agent.handle_user_message(user.user_id, user.message)
-    return {"response": response}
-
-@app.get("/")
-def home():
-    return {"message": "Conversational Agent is running!"}
+# Include routers for HTTP and WebSocket endpoints
+app.include_router(http_router)
+app.include_router(ws_router)
 
 def start_server():
     # Start Docker container (if not already running)
@@ -34,7 +24,6 @@ def start_server():
     ProductsRetrievalService().sync_mongo_to_opensearch()
 
     # Start server
-    # uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
     subprocess.run(["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"])
 
 if __name__ == "__main__":
