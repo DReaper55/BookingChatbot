@@ -8,3 +8,6 @@ pymongo~=4.11.1
 opensearch-py~=2.8.0
 python-dotenv~=1.0.1
 scikit-learn~=1.5.2
+python-jose~=3.4.0
+passlib~=1.7.4
+starlette~=0.41.3
