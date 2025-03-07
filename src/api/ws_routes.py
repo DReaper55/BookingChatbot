@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
@@ -36,8 +37,8 @@ async def send_recommendations(websocket: WebSocket, user_id: str):
         manager.disconnect(user_id)
 
 
-@router.websocket("/ws/chat/{user_id}")
-async def chat_websocket(websocket: WebSocket, user_id: str):
+@router.websocket("/ws/chat/{user_id}/{chat_id}")
+async def chat_websocket(websocket: WebSocket, user_id: str, chat_id: str):
     await manager.connect(websocket, user_id)
 
     try:
@@ -45,10 +46,13 @@ async def chat_websocket(websocket: WebSocket, user_id: str):
             data = await websocket.receive_text()
 
             # Process user message
-            response = agent.handle_user_message(user_id, data)
+            response = agent.handle_user_message(user_id, chat_id, data)
+
+            if "products" in response and response["products"] is not None:
+                await manager.send_message(user_id, json.dumps(response["products"]))
 
             # Send response back in real-time
-            await manager.send_message(user_id, response)
+            await manager.send_message(user_id, response["message"])
 
     except WebSocketDisconnect:
         manager.disconnect(user_id)

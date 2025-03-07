@@ -12,8 +12,5 @@ class ShirtRetrievalService:
 
     @staticmethod
     def buy_shirt(**kwargs):
-        return {
-            "available": "5",
-            "price": "$25.25",
-            "size": "XL"
-        }
+        product_type = "shirt"
+        return ProductsRetrievalService().retrieve_formatted_result(product_type, **kwargs)

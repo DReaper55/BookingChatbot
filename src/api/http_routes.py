@@ -1,10 +1,9 @@
 from typing import Dict, Any, List
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from src.agents.conversational_agent import ConversationalAgent
-from src.api.auth_routes import get_current_user
 from src.repository.mongodb_service import DatabaseService
 from src.utils.mongo_collections import MongoCollection
 
@@ -191,3 +190,51 @@ def delete_user(user_id: str):
     if not deleted:
         raise HTTPException(status_code=404, detail="User data not found or not deleted")
     return {"message": "User data deleted successfully"}
+
+
+
+# .......................................
+# Chat Collection CRUD
+# .......................................
+
+@router.post("/session", response_model=Dict[str, Any])
+def create_session(user: Dict[str, Any]):
+    """Create a new session entry."""
+    user_id = db_service.insert_one(MongoCollection.SESSIONS.value, user)
+    return {"message": "Session created successfully", "id": str(user_id)}
+
+
+@router.get("/session/{user_id}", response_model=List[Dict[str, Any]])
+def get_user_sessions(user_id: str):
+    """Get a session's data."""
+    session_data = db_service.find_many(MongoCollection.SESSIONS.value, {"user_id": user_id}, {"_id": 0})
+    if not session_data:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return session_data
+
+
+@router.get("/session/{user_id}/{chat_id}", response_model=Dict[str, Any])
+def get_session(user_id: str, chat_id: str):
+    """Get a session's data."""
+    session_data = db_service.find_one(MongoCollection.SESSIONS.value, {"user_id": user_id, "chat_id": chat_id}, {"_id": 0})
+    if not session_data:
+        raise HTTPException(status_code=404, detail="User data not found")
+    return session_data
+
+
+@router.put("/session/{user_id}/{chat_id}")
+def update_session(user_id: str, chat_id: str, update_data: Dict[str, Any]):
+    """Update session data."""
+    updated = db_service.update_one(MongoCollection.SESSIONS.value, {"user_id": user_id, "chat_id": chat_id}, update_data)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Session not found or not updated")
+    return {"message": "Session updated successfully"}
+
+
+@router.delete("/session/{user_id}/{chat_id}")
+def delete_session(user_id: str, chat_id: str):
+    """Delete a session's data."""
+    deleted = db_service.delete_one(MongoCollection.SESSIONS.value, {"user_id": user_id, "chat_id": chat_id})
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Session not found or not deleted")
+    return {"message": "Session deleted successfully"}

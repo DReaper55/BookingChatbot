@@ -62,4 +62,4 @@ class BookingAgent(metaclass=SingletonMeta):
             # Augment input with retrieved data
             retrieved_text = " ".join([f"{key}: {value}" for key, value in retrieved_data.items()])
 
-            return self.__response_model.generate_response(user_input, intent, slots, retrieved_text)
+            return self.__response_model.generate_response(user_input, intent, slots, retrieved_text), retrieved_data

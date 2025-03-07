@@ -173,16 +173,16 @@ class ProductsRetrievalService:
         """
         Generic method to find a product based on the product type and filters.
         """
-        author = kwargs['filter'].get("author", None)
-        price = kwargs['filter'].get("price", None)
-        quantity = kwargs['filter'].get("quantity", 1)
-        title = kwargs['filter'].get("title", None)
-        brand = kwargs['filter'].get("brand", None)
-        size = kwargs['filter'].get("size", None)
-        category = kwargs['filter'].get("category", product_type)
+        author = kwargs.get("author", None)
+        price = kwargs.get("price", None)
+        quantity = kwargs.get("quantity", 1)
+        title = kwargs.get("title", None)
+        brand = kwargs.get("brand", None)
+        size = kwargs.get("size", None)
+        category = kwargs.get("category", product_type)
 
         # List to store the values of keys that contain the word 'feature'
-        features = [value for key, value in kwargs['filter'].items() if 'feature' in key]
+        features = [value for key, value in kwargs.items() if 'feature' in key]
 
         # Build filters dynamically
         filters = {
@@ -222,8 +222,9 @@ class ProductsRetrievalService:
         return {
             "available": str(product.get("stock", "NONE")),
             "price": f"${product.get('price', 'NONE')}",
-            "size": product.get("size", "NONE"),
+            # "size": product.get("size", "NONE"),
             "brand": product.get("brand", "NONE"),
+            "id": product.get("product_id", "NONE"),
             "features": product.get("features", [])
         }
 
@@ -250,15 +251,15 @@ def get_best_product(products):
     )
 
 # Example Usage
-if __name__ == "__main__":
-    product_service = ProductsRetrievalService()
-
-#     Sync MongoDB to OpenSearch
-#     product_service.sync_mongo_to_opensearch()
-
-    filt = {'author': 'null', 'brand': 'Wrangler', 'feature-blue': 'blue', 'feature-denim': 'denim', 'feature-regular': 'regular', 'price': 'null', 'product-type': 'null', 'quantity': 'null', 'size': 'M', 'title': 'null', 'category': 'pants'}
-
-#     Search for "Nike Shoes"
-#     results = product_service.search_products("Adidas Shirt", filt)
-    results = product_service.retrieve_formatted_result("pants", filter=filt)
-    print(results)
+# if __name__ == "__main__":
+#     product_service = ProductsRetrievalService()
+#
+# #     Sync MongoDB to OpenSearch
+# #     product_service.sync_mongo_to_opensearch()
+#
+#     filt = {'author': 'null', 'brand': 'Wrangler', 'feature-blue': 'blue', 'feature-denim': 'denim', 'feature-regular': 'regular', 'price': 'null', 'product-type': 'null', 'quantity': 'null', 'size': 'M', 'title': 'null', 'category': 'pants'}
+#
+# #     Search for "Nike Shoes"
+# #     results = product_service.search_products("Adidas Shirt", filt)
+#     results = product_service.retrieve_formatted_result("pants", filter=filt)
+#     print(results)

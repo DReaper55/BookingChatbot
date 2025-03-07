@@ -1,18 +1,14 @@
+from src.repository.opensearch_query_service import ProductsRetrievalService
+
+
 class FoodRetrievalService:
     """Service class responsible for retrieving different types of food."""
     @staticmethod
-    def find_food(food_type, restaurant_name):
-        return {
-            "food-type": food_type,
-            "restaurant-name": restaurant_name,
-            "price": "12.25",
-            "estimated-delivery": "5 mins"
-        }
+    def find_food(**kwargs):
+        product_type = "food"
+        return ProductsRetrievalService().retrieve_formatted_result(product_type, **kwargs)
 
     @staticmethod
-    def buy_food(food_id, quantity):
-        return {
-            "food_id": food_id,
-            "quantity": quantity,
-            "status": "ordered"
-        }
+    def buy_food(**kwargs):
+        product_type = "food"
+        return ProductsRetrievalService().retrieve_formatted_result(product_type, **kwargs)

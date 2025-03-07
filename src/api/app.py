@@ -5,6 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 from http_routes import router as http_router
 from auth_routes import router as auth_router
 from src.api.auth_middleware import auth_middleware_factory
+from src.repository.opensearch_query_service import ProductsRetrievalService
 from ws_routes import router as ws_router
 
 # from src.repository.opensearch_query_service import ProductsRetrievalService
@@ -45,7 +46,7 @@ def start_server():
     #     print("Failed to start Docker container. Ensure it exists.")
 
     # Sync databases
-    # ProductsRetrievalService().sync_mongo_to_opensearch()
+    ProductsRetrievalService().sync_mongo_to_opensearch()
 
     # Start server
     subprocess.run(["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"])

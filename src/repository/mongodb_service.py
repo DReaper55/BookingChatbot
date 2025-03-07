@@ -49,13 +49,13 @@ class DatabaseService:
     def update_one(self, collection_name: str, query: Dict[str, Any], update_data: Dict[str, Any]) -> int:
         """Update a single document in a collection."""
         collection = self.db[collection_name]
-        result = collection.update_one(query, {"$set": update_data})
+        result = collection.update_one(query, {"$push": update_data})
         return result.modified_count
 
     def update_many(self, collection_name: str, query: Dict[str, Any], update_data: Dict[str, Any]) -> int:
         """Update multiple documents in a collection."""
         collection = self.db[collection_name]
-        result = collection.update_many(query, {"$set": update_data})
+        result = collection.update_many(query, {"$push": update_data})
         return result.modified_count
 
     def delete_one(self, collection_name: str, query: Dict[str, Any]) -> int:
