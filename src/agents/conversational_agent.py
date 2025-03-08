@@ -1,3 +1,5 @@
+import json
+
 from src.agents.booking_agent import BookingAgent
 from src.evaluation.evaluate_context_translation_model import ContextTranslator
 from src.evaluation.evaluate_slot_filler_model import SlotFiller
@@ -39,12 +41,12 @@ class ConversationalAgent(metaclass=SingletonMeta):
         # Keep requesting for more information
         if self.__state_service.get_state(user_id) == ConversationStates.SLOT_FILLING.value:
             response = self.__slot_filler.generate_response(self.__session_service.get_context(user_id, chat_id))
-            self.__session_service.add_turn(user_id, chat_id, ConversationSpeaker.BOT.value, response)
 
             # If response contains a structured task, switch to booking
             if "." in response:
                 self.__state_service.update_state(user_id, ConversationStates.CONTEXT_TRANSLATOR.value)
             else:
+                self.__session_service.add_turn(user_id, chat_id, ConversationSpeaker.BOT.value, response)
                 return {"message": response}
 
         # Summarize all received information and create a task
@@ -63,6 +65,7 @@ class ConversationalAgent(metaclass=SingletonMeta):
             # Pass the task to the booking agent
             booking_response, retrieved_data = self.__booking_agent.generate_response(structured_task)
             self.__session_service.add_turn(user_id, chat_id, ConversationSpeaker.BOT.value, booking_response)
+            self.__session_service.add_turn(user_id, chat_id, ConversationSpeaker.BOT.value, json.dumps(retrieved_data))
 
             # Reset state and session after booking is complete
             self.__state_service.reset_state(user_id)
@@ -70,7 +73,10 @@ class ConversationalAgent(metaclass=SingletonMeta):
 
             return {
                 "message": booking_response + " What would you like me to do next?",
-                "products": f"load_product:{retrieved_data}"  # Send the retrieved products to frontend
+                "products": {
+                    "action": "load_product",
+                    "data": retrieved_data  # Ensure this is a list of dictionaries, not a string
+                }  # Send the retrieved products to frontend
             }
 
         return {"message": "I'm not sure how to proceed."}
