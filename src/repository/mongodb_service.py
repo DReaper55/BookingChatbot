@@ -11,7 +11,7 @@ load_dotenv()
 
 
 class DatabaseService:
-    def __init__(self, db_url: str = os.getenv(EnvKeys.MONGO_HOST.value), db_name: str = os.getenv(EnvKeys.MONGO_DB.value)):
+    def __init__(self, db_url: str = os.getenv(EnvKeys.MONGO_CLUSTER.value), db_name: str = os.getenv(EnvKeys.MONGO_DB.value)):
         """Initialize MongoDB connection."""
         self.client = MongoClient(db_url)
         self.db = self.client[db_name]
@@ -50,6 +50,12 @@ class DatabaseService:
         """Update a single document in a collection."""
         collection = self.db[collection_name]
         result = collection.update_one(query, {"$push": update_data})
+        return result.modified_count
+
+    def update_one_replace(self, collection_name: str, query: Dict[str, Any], update_data: Dict[str, Any]) -> int:
+        """Update a single document in a collection."""
+        collection = self.db[collection_name]
+        result = collection.update_one(query, {"$set": update_data})
         return result.modified_count
 
     def update_many(self, collection_name: str, query: Dict[str, Any], update_data: Dict[str, Any]) -> int:

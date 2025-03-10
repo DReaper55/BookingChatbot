@@ -64,19 +64,23 @@ class ConversationalAgent(metaclass=SingletonMeta):
 
             # Pass the task to the booking agent
             booking_response, retrieved_data = self.__booking_agent.generate_response(structured_task)
-            self.__session_service.add_turn(user_id, chat_id, ConversationSpeaker.BOT.value, booking_response)
-            self.__session_service.add_turn(user_id, chat_id, ConversationSpeaker.BOT.value, json.dumps(retrieved_data))
+            # self.__session_service.add_turn(user_id, chat_id, ConversationSpeaker.BOT.value, booking_response)
+
+            message = booking_response + " What would you like me to do next?"
+            products = {
+                "action": "load_product",
+                "data": retrieved_data
+            }
+
+            # self.__session_service.add_turn(user_id, chat_id, ConversationSpeaker.BOT.value, json.dumps(products))
 
             # Reset state and session after booking is complete
             self.__state_service.reset_state(user_id)
             # self.__session_service.reset_session(user_id, structured_task)
 
             return {
-                "message": booking_response + " What would you like me to do next?",
-                "products": {
-                    "action": "load_product",
-                    "data": retrieved_data  # Ensure this is a list of dictionaries, not a string
-                }  # Send the retrieved products to frontend
+                "message": message,
+                "products": products
             }
 
         return {"message": "I'm not sure how to proceed."}

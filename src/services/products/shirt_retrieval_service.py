@@ -8,7 +8,8 @@ class ShirtRetrievalService:
     def find_shirt(**kwargs):
         # Extract query parameters from kwargs
         product_type = "shirt"
-        return ProductsRetrievalService().retrieve_formatted_result(product_type, **kwargs)
+        result = ProductsRetrievalService().retrieve_formatted_result(product_type, **kwargs)
+        return result
 
     @staticmethod
     def buy_shirt(**kwargs):

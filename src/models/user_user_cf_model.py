@@ -108,10 +108,10 @@ def update_user_similarity():
             user_id = user_map[user]
 
             # Update the record in MongoDB
-            db_service.update_one(
+            db_service.update_one_replace(
                 MongoCollection.USER_SIMILARITY.value,
                 {"_id": record["_id"]},
-                {"$set": {"user_id": user_id}}
+                {"user_id": user_id}
             )
             print(f"Updated {user} -> {user_id}")
 

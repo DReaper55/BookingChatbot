@@ -1,25 +1,31 @@
 from src.utils.asset_paths import AssetPaths
+from src.utils.env_keys import EnvKeys
 from src.utils.helpers import load_t5_model_and_tokenizer
 from src.utils.helpers import reformat_text
 import torch
 
 from src.utils.singleton_meta import SingletonMeta
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 class BookingModel(metaclass=SingletonMeta):
     """Generates classified intents responses using a fine-tuned T5 model."""
     def __init__(self):
-        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_BOOKING_MODEL.value)
+        # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_BOOKING_MODEL.value)
+        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.RAG_BASED_BOOKING_MODEL.value))
         self.__device = "cuda" if torch.cuda.is_available() else "cpu"
         self.__model.to(self.__device)
 
-    def generate_response(self, user_input, active_intent="NONE", slot_values={}, retrieved="NONE"):
+    def generate_response(self, user_input, active_intent="NONE", slot_values="NONE", retrieved="NONE"):
         """
         Generates a response based on user input, intent, and slot values.
         """
         # Format input for T5
-        slot_values_str = ", ".join([f"{k}={', '.join(v)}" for k, v in slot_values.items()])
-        input_text = f"generate response: {user_input}. Intent: {active_intent}. Slots: {slot_values_str}. Retrieved: {retrieved}"
+        input_text = f"generate response: {user_input}. Intent: {active_intent}. Slots: {slot_values}. Retrieved: {retrieved}"
+
+        print(f'augmented_input 2: {input_text}')
 
         input_text = reformat_text(input_text)
 
@@ -49,7 +55,7 @@ class BookingModel(metaclass=SingletonMeta):
 
 # Example 2: Train booking request
 # user_query = "Hello, I am looking for a restaurant in Cambridge. I believe it is called Golden Wok"
-# active_intent = "find_restaurant"
+# active_intent = "find_product"
 # slot_values = {
 #     "restaurant-name": ["golden wok"],
 # }

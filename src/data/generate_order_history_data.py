@@ -99,8 +99,8 @@ def get_user_orders(user_id):
 
 
 if __name__ == "__main__":
-    # create_order_history(get_path_to(AssetPaths.ECOM_DATASET.value))
+    create_order_history(get_path_to(AssetPaths.ECOM_DATASET.value))
 
-    user_data = get_user_orders("ce81c9bd-fa1d-4ddc-a61d-6b9722977194")
-    print(user_data["user"])  # Sophia
-    print(user_data["orders"])  # List of past purchases
+    # user_data = get_user_orders("ce81c9bd-fa1d-4ddc-a61d-6b9722977194")
+    # print(user_data["user"])  # Sophia
+    # print(user_data["orders"])  # List of past purchases

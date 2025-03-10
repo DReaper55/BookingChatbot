@@ -13,7 +13,7 @@ load_dotenv()
 
 class ProductsRetrievalService:
     def __init__(self,
-                 mongo_uri=os.getenv(EnvKeys.MONGO_HOST.value),
+                 mongo_uri=os.getenv(EnvKeys.MONGO_CLUSTER.value),
                  mongo_db=os.getenv(EnvKeys.MONGO_DB.value),
                  mongo_collection=MongoCollection.PRODUCTS.value,
                  opensearch_host="localhost",
@@ -107,7 +107,7 @@ class ProductsRetrievalService:
             must_clauses.append({
                 "multi_match": {
                     "query": query,
-                    "fields": ["category", "brand", "features", "size"],
+                    "fields": ["category", "brand"],
                     "type": "best_fields",
                     "fuzziness": "AUTO"
                 }
@@ -202,6 +202,8 @@ class ProductsRetrievalService:
         if features:
             filters["features"] = features
 
+        print(f'augmented_input 3: {category}, {filters}')
+
         # Perform search
         results = (self.search_products(category, filters=filters))
 
@@ -222,7 +224,7 @@ class ProductsRetrievalService:
         return {
             "available": str(product.get("stock", "NONE")),
             "price": f"${product.get('price', 'NONE')}",
-            # "size": product.get("size", "NONE"),
+            "size": product.get("size", "NONE"),
             "brand": product.get("brand", "NONE"),
             "id": product.get("product_id", "NONE"),
             "features": product.get("features", [])

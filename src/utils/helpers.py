@@ -102,20 +102,27 @@ def reformat_text(input_text):
         return formatted_text
 
 
-def format_extracted_features(input_string):
-    # Add braces to make it a valid dictionary string
-    input_string = "{" + input_string + "}"
+def format_extracted_features(input_string, is_json=False):
+    product_info = input_string
 
-    # Fix missing double quotes around keys
-    input_string = re.sub(r'(\w+):', r'"\1":', input_string)
+    if not is_json:
+        # Add braces to make it a valid dictionary string
+        input_string = "{" + input_string + "}"
 
-    # Fix missing double quotes around unquoted string values (words without spaces)
-    input_string = re.sub(r': (\w+)([,}])', r': "\1"\2', input_string)
+        # Fix missing double quotes around keys
+        input_string = re.sub(r'(\w+):', r'"\1":', input_string)
 
-    product_info = json.loads(input_string)
+        # Fix missing double quotes around unquoted string values (words without spaces)
+        input_string = re.sub(r': (\w+)([,}])', r': "\1"\2', input_string)
+
+        product_info = json.loads(input_string)
+
+    # Remove None and 'null' values from filters
+    product_info = {k: v for k, v in product_info.items() if v and v != 'null'}
 
     # Replace whitespaces with hyphens in the features list
-    product_info["features"] = [feature.replace(" ", "-") for feature in product_info["features"]]
+    if "features" in product_info:
+        product_info["features"] = [feature.replace(" ", "-") for feature in product_info["features"]]
 
     formatted_info = []
 
@@ -124,7 +131,10 @@ def format_extracted_features(input_string):
         if key == "features":
             # For features, add each feature separately
             for feature in value:
-                formatted_info.append(f"feature-{feature}={feature}")
+                if is_json:
+                    formatted_info.append(f"feature={feature}")
+                else:
+                    formatted_info.append(f"feature-{feature}={feature}")
         else:
             # For other key-value pairs, add them directly
             formatted_info.append(f"{key}={value}")
@@ -148,6 +158,22 @@ def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
     return model, tokenizer, data_collator
 
+
+def upload_model_to_huggingface():
+    from huggingface_hub import login, HfApi
+
+    # login()  # Logs you into Hugging Face
+    api = HfApi()
+
+    # Upload your model to your Hugging Face account
+    api.upload_folder(
+        folder_path=get_path_to(AssetPaths.T5_SLOT_FILLER_MODEL.value),
+        repo_id="DReaper/slot-filler",
+        repo_type="model"
+    )
+
+
+upload_model_to_huggingface()
 
 # input_string = '"author": null, "brand": "PayPal", "features": ["standard delivery", "yellow", "paypal", "casual"], "price": "$120", "product-type": "dress", "quantity": null, "size": "extra-large", "title": null, category: dress'
 # res = format_extracted_features(input_string)

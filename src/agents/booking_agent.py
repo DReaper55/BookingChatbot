@@ -19,7 +19,9 @@ class BookingAgent(metaclass=SingletonMeta):
     def __extract_slots(self, user_input):
         """Use the slot extraction model to get slot values from the user input."""
         slot_output = self.__slot_model.extract_features(user_input)
+
         slot_output = format_extracted_features(slot_output)
+
         slots = {}
         for pair in slot_output.split(", "):
             if "=" in pair:
@@ -57,9 +59,24 @@ class BookingAgent(metaclass=SingletonMeta):
             # Retrieve relevant data
             retrieved_data = self.__retrieve_information(intent, slots)
 
-            print(f'augmented_input 1: {retrieved_data}')
+            temp_items = retrieved_data.copy()
+
+            temp_items.pop('size', None)
+            temp_items.pop('id', None)
+            # temp_items.pop('price', None)
+
+            # temp_items['size'] = "XL"
+
+            slots = format_extracted_features(slots, True)
+            retrieved_text = format_extracted_features(temp_items, True)
+
+            print(f'augmented_input 1: {retrieved_text}')
 
             # Augment input with retrieved data
-            retrieved_text = " ".join([f"{key}: {value}" for key, value in retrieved_data.items()])
+            # retrieved_text = " ".join([f"{key}={value}, " for key, value in temp_items.items()])
+
+            # print(f'augmented_input 2: {retrieved_text}')
+
+            # retrieved_text = f"{retrieved_text}, {formatted_feat}"
 
             return self.__response_model.generate_response(user_input, intent, slots, retrieved_text), retrieved_data

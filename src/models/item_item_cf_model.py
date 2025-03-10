@@ -83,8 +83,8 @@ def get_similar_products(product_id, top_n=5):
     return []
 
 if __name__ == "__main__":
-    # train_similarity_model(get_path_to(AssetPaths.ECOM_DATASET.value))
+    train_similarity_model(get_path_to(AssetPaths.ECOM_DATASET.value))
 
     # Example usage
-    similar_products = get_similar_products("P0001")
-    print(similar_products)
+    # similar_products = get_similar_products("P0001")
+    # print(similar_products)

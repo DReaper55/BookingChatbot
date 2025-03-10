@@ -1,14 +1,19 @@
 from src.utils.asset_paths import AssetPaths
+from src.utils.env_keys import EnvKeys
 from src.utils.helpers import load_t5_model_and_tokenizer
 import torch
 
 from src.utils.singleton_meta import SingletonMeta
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 class FeatureExtraction(metaclass=SingletonMeta):
     """Generates classified intents responses using a fine-tuned T5 model."""
     def __init__(self):
-        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_MULTITASK_FEATURE_EXTRACTION_MODEL.value)
+        # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_MULTITASK_FEATURE_EXTRACTION_MODEL.value)
+        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.FEATURE_EXTRACTION_MODEL.value))
         self.__device = "cuda" if torch.cuda.is_available() else "cpu"
         self.__model.to(self.__device)
 
