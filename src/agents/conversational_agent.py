@@ -1,5 +1,9 @@
 import json
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.agents.booking_agent import BookingAgent
 from src.evaluation.evaluate_context_translation_model import ContextTranslator
 from src.evaluation.evaluate_slot_filler_model import SlotFiller

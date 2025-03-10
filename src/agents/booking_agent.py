@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.actions.retriever import Retriever
 from src.evaluation.evaluate_booking_model import BookingModel
 from src.evaluation.evaluate_intent_classifier_model import IntentClassifier
