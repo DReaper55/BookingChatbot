@@ -2,6 +2,10 @@ import json
 import os
 import random
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import get_path_to
 

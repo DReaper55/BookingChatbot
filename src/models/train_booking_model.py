@@ -1,5 +1,9 @@
 from transformers import Trainer, TrainingArguments
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.data.load_dataset import load_booking_dataset, load_rag_dataset
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import load_t5_model_and_tokenizer, get_path_to

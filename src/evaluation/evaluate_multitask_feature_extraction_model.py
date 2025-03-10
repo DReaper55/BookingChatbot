@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.utils.asset_paths import AssetPaths
 from src.utils.env_keys import EnvKeys
 from src.utils.helpers import load_t5_model_and_tokenizer
@@ -5,7 +9,6 @@ import torch
 
 from src.utils.singleton_meta import SingletonMeta
 
-import os
 from dotenv import load_dotenv
 load_dotenv()
 

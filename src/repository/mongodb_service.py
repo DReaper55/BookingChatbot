@@ -1,7 +1,9 @@
-import os
-
 from pymongo import MongoClient
 from typing import List, Dict, Any, Optional
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.utils.env_keys import EnvKeys
 from src.utils.mongo_collections import MongoCollection

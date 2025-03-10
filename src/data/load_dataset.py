@@ -1,6 +1,10 @@
 from datasets import load_dataset, Dataset
 from torch.utils.data import random_split, DataLoader
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import load_t5_model_and_tokenizer, get_path_to, extract_text_and_intent, \
     extract_slots, reformat_text

@@ -10,6 +10,9 @@ from fastapi.security import OAuth2PasswordBearer
 
 from dotenv import load_dotenv
 
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.repository.mongodb_service import DatabaseService
 from src.utils.env_keys import EnvKeys
 from src.utils.mongo_collections import MongoCollection

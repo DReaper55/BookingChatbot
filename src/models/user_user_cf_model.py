@@ -3,6 +3,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from collections import defaultdict
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.repository.mongodb_service import DatabaseService
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import get_path_to

@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.services.products.accessory_retrieval_service import AccessoryRetrievalService
 from src.services.products.book_retrieval_service import BookRetrievalService
 from src.services.products.dress_retrieval_service import DressRetrievalService

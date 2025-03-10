@@ -1,8 +1,11 @@
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from pymongo import MongoClient
-import os
 
 from dotenv import load_dotenv
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.services.recommendation_service import get_cf_recommendations
 from src.utils.env_keys import EnvKeys

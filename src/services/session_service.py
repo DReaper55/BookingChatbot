@@ -3,6 +3,10 @@ from collections import deque
 from enum import Enum
 from typing import List
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.repository.mongodb_service import DatabaseService
 from src.utils.helpers import get_path_to
 from src.utils.mongo_collections import MongoCollection

@@ -2,6 +2,10 @@ import subprocess
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from http_routes import router as http_router
 from auth_routes import router as auth_router
 from src.api.auth_middleware import auth_middleware_factory

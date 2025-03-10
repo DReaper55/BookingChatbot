@@ -3,6 +3,10 @@ from typing import Dict, Any, List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.agents.conversational_agent import ConversationalAgent
 from src.repository.mongodb_service import DatabaseService
 from src.utils.mongo_collections import MongoCollection

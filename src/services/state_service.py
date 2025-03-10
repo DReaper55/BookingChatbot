@@ -1,5 +1,9 @@
 from enum import Enum
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from src.utils.singleton_meta import SingletonMeta
 
 
