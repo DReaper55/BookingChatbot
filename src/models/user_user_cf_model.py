@@ -128,10 +128,10 @@ def get_similar_users(user_id, top_n=5):
     return []
 
 
-if __name__ == "__main__":
-    # train_user_similarity(get_path_to(AssetPaths.ECOM_DATASET.value))
-
-    similar_users = get_similar_users("Sophia")
-    print(similar_users)
-
-    # update_user_similarity()
+# if __name__ == "__main__":
+#     # train_user_similarity(get_path_to(AssetPaths.ECOM_DATASET.value))
+#
+#     similar_users = get_similar_users("Sophia")
+#     print(similar_users)
+#
+#     # update_user_similarity()

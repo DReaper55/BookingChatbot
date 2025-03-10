@@ -50,4 +50,4 @@ def train_model(output_dir):
 
 
 # Train booking model
-train_model(get_path_to(AssetPaths.T5_BOOKING_MODEL.value))
+# train_model(get_path_to(AssetPaths.T5_BOOKING_MODEL.value))

@@ -178,7 +178,7 @@ def upload_model_to_huggingface():
     )
 
 
-upload_model_to_huggingface()
+# upload_model_to_huggingface()
 
 # input_string = '"author": null, "brand": "PayPal", "features": ["standard delivery", "yellow", "paypal", "casual"], "price": "$120", "product-type": "dress", "quantity": null, "size": "extra-large", "title": null, category: dress'
 # res = format_extracted_features(input_string)

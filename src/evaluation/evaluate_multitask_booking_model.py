@@ -30,6 +30,6 @@ def predict_intent_slot_response(text):
 
 
 # user_input = "I want to get a green shirt in medium size that's for biking"
-user_input = "I need a train from Norwich to Cambridge on Monday."
-result = predict_intent_slot_response(user_input)
-print(result)
+# user_input = "I need a train from Norwich to Cambridge on Monday."
+# result = predict_intent_slot_response(user_input)
+# print(result)

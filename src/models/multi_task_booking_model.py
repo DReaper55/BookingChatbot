@@ -78,4 +78,4 @@ def train_model(output_dir):
     # tokenizer.save_pretrained(output_dir)
 
 
-train_model(get_path_to(AssetPaths.T5_MULTITASK_BOOKING_MODEL.value))
+# train_model(get_path_to(AssetPaths.T5_MULTITASK_BOOKING_MODEL.value))
