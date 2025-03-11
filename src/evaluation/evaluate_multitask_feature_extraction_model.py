@@ -56,7 +56,7 @@ class FeatureExtraction(metaclass=SingletonMeta):
 
 
 # user_input = "I want to get a green shirt in medium size that's for biking"
-# user_input = "Buy a yellow casual dress in extra-large size for $120 with PayPal and standard delivery."
-# # result = extract_features(user_input)
-# result = FeatureExtraction().extract_features(user_input)
-# print(result)
+user_input = "Buy a yellow casual dress in extra-large size for $120 with PayPal and standard delivery."
+# result = extract_features(user_input)
+result = FeatureExtraction().extract_features(user_input)
+print(result)

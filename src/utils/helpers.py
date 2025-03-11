@@ -7,6 +7,12 @@ import torch
 
 import sys
 import os
+
+import torch.nn.utils.prune as prune
+import bitsandbytes as bnb
+
+from transformers import AutoTokenizer
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.utils.asset_paths import AssetPaths
@@ -147,7 +153,7 @@ def format_extracted_features(input_string, is_json=False):
     return ", ".join(formatted_info)
 
 def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
-    from transformers import T5ForConditionalGeneration, T5Tokenizer, DataCollatorForSeq2Seq
+    from transformers import T5ForConditionalGeneration, T5Tokenizer, T5Config, AutoModelForSeq2SeqLM, AutoTokenizer, DataCollatorForSeq2Seq
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -158,8 +164,28 @@ def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
         # MODEL_NAME = get_path_to(model_path)
         MODEL_NAME = model_path
 
+    config_params = {
+        "num_layers": 4,
+        # "num_decoder_layers": 3,
+        # "num_heads": 5,
+        # "d_model": 256,
+        # "d_ff": 1024,
+    }
+
+    # Reduce the number of layers
+    config = T5Config.from_pretrained(MODEL_NAME, **config_params)
+
     tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
-    model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME).to(device)
+    model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME, config=config).to(device)
+    model.half() # convert to FP16
+
+    # Prune 20% of the weights in linear layers
+    # for name, module in model.named_modules():
+    #     if isinstance(module, torch.nn.Linear):
+    #         prune.l1_unstructured(module, name='weight', amount=0.2)
+
+    # model.push_to_hub("DReaper/feature-extraction")
+
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
     return model, tokenizer, data_collator
 
@@ -177,6 +203,8 @@ def upload_model_to_huggingface():
         repo_type="model"
     )
 
+
+# load_t5_model_and_tokenizer(True, get_path_to(AssetPaths.T5_BOOKING_MODEL.value))
 
 # upload_model_to_huggingface()
 
