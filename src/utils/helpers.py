@@ -1,17 +1,9 @@
-import ast
 import json
 import os
 import re
+import sys
 
 import torch
-
-import sys
-import os
-
-import torch.nn.utils.prune as prune
-import bitsandbytes as bnb
-
-from transformers import AutoTokenizer
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -153,7 +145,7 @@ def format_extracted_features(input_string, is_json=False):
     return ", ".join(formatted_info)
 
 def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
-    from transformers import T5ForConditionalGeneration, T5Tokenizer, T5Config, AutoModelForSeq2SeqLM, AutoTokenizer, DataCollatorForSeq2Seq
+    from transformers import T5ForConditionalGeneration, T5Tokenizer, T5Config, DataCollatorForSeq2Seq
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -179,11 +171,6 @@ def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
     model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME, config=config).to(device)
     model.half() # convert to FP16
 
-    # Prune 20% of the weights in linear layers
-    # for name, module in model.named_modules():
-    #     if isinstance(module, torch.nn.Linear):
-    #         prune.l1_unstructured(module, name='weight', amount=0.2)
-
     # model.push_to_hub("DReaper/feature-extraction")
 
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
@@ -191,7 +178,7 @@ def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
 
 
 def upload_model_to_huggingface():
-    from huggingface_hub import login, HfApi
+    from huggingface_hub import HfApi
 
     # login()  # Logs you into Hugging Face
     api = HfApi()
