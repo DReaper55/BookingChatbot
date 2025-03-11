@@ -1,10 +1,9 @@
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.utils.asset_paths import AssetPaths
 from src.utils.env_keys import EnvKeys
-from src.utils.helpers import load_t5_model_and_tokenizer
 import torch
 
 from src.utils.singleton_meta import SingletonMeta
@@ -16,11 +15,15 @@ class IntentClassifier(metaclass=SingletonMeta):
     """Generates classified intents responses using a fine-tuned T5 model."""
     def __init__(self):
         # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_INTENT_CLASSIFIER_MODEL.value)
-        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.INTENT_CLASSIFIER_MODEL.value))
+        self.__model, self.__tokenizer = None, None
         self.__device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.__model.to(self.__device)
 
     def generate_response(self, user_input):
+        from src.utils.helpers import load_t5_model_and_tokenizer
+
+        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.INTENT_CLASSIFIER_MODEL.value))
+        self.__model.to(self.__device)
+
         inputs = self.__tokenizer(user_input, return_tensors="pt", padding=True, truncation=True, max_length=512)
         inputs = {k: v.to(self.__device) for k, v in inputs.items()}
 

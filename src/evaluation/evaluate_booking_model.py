@@ -1,10 +1,9 @@
-import sys
 import os
+import sys
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.utils.asset_paths import AssetPaths
 from src.utils.env_keys import EnvKeys
-from src.utils.helpers import load_t5_model_and_tokenizer
 from src.utils.helpers import reformat_text
 import torch
 
@@ -17,14 +16,18 @@ class BookingModel(metaclass=SingletonMeta):
     """Generates classified intents responses using a fine-tuned T5 model."""
     def __init__(self):
         # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_BOOKING_MODEL.value)
-        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.RAG_BASED_BOOKING_MODEL.value))
+        self.__model, self.__tokenizer = None, None
         self.__device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.__model.to(self.__device)
 
     def generate_response(self, user_input, active_intent="NONE", slot_values="NONE", retrieved="NONE"):
         """
         Generates a response based on user input, intent, and slot values.
         """
+        from src.utils.helpers import load_t5_model_and_tokenizer
+
+        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.RAG_BASED_BOOKING_MODEL.value))
+        self.__model.to(self.__device)
+
         # Format input for T5
         input_text = f"generate response: {user_input}. Intent: {active_intent}. Slots: {slot_values}. Retrieved: {retrieved}"
 
