@@ -16,12 +16,12 @@ agent = ConversationalAgent()  # Keep a running instance
 
 class UserInput(BaseModel):
     user_id: str
+    chat_id: str
     message: str
 
 @router.post("/chat")
 def chat(user: UserInput):
-    response = agent.handle_user_message(user.user_id, user.message)
-    return {"response": response}
+    return agent.handle_user_message(user.user_id, user.chat_id, user.message)
 
 @router.get("/")
 def home():
