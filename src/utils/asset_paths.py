@@ -10,6 +10,8 @@ class AssetPaths(Enum):
     T5_CONTEXT_TRANSLATOR_MODEL = 'models/t5_context_translator_model' #
     T5_SLOT_FILLER_MODEL = 'models/t5_slot_filler_model' #
 
+    T5_DISTIL_INTENT_CLASSIFIER_MODEL = 'models/t5_distil_intent_classifier_model' #
+
     # Weights
 
     # Transformers

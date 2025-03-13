@@ -5,7 +5,7 @@ from src.services.state_service import StateService, ConversationStates
 user_id = "67c76b5be5b4aa75082eed96"
 chat_id = "124"
 
-ProductsRetrievalService().sync_mongo_to_opensearch()
+# ProductsRetrievalService().sync_mongo_to_opensearch()
 
 agent = ConversationalAgent()
 

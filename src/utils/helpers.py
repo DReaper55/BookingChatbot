@@ -153,8 +153,8 @@ def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
     MODEL_NAME = "google-t5/t5-small"  # Can use "t5-base" or "t5-large" for better performance
 
     if from_saved:
-        # MODEL_NAME = get_path_to(model_path)
-        MODEL_NAME = model_path
+        MODEL_NAME = get_path_to(model_path)
+        # MODEL_NAME = model_path
 
     config_params = {
         "num_layers": 4,
@@ -165,11 +165,12 @@ def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
     }
 
     # Reduce the number of layers
-    config = T5Config.from_pretrained(MODEL_NAME, **config_params)
+    # config = T5Config.from_pretrained(MODEL_NAME, **config_params)
 
     tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
-    model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME, config=config).to(device)
-    model.half() # convert to FP16
+    model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME).to(device)
+    # model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME, config=config).to(device)
+    # model.half() # convert to FP16
 
     # model.push_to_hub("DReaper/feature-extraction")
 

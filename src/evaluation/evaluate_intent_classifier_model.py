@@ -1,6 +1,8 @@
 import os
 import sys
 
+from src.utils.asset_paths import AssetPaths
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.utils.env_keys import EnvKeys
@@ -21,7 +23,9 @@ class IntentClassifier(metaclass=SingletonMeta):
     def generate_response(self, user_input):
         from src.utils.helpers import load_t5_model_and_tokenizer
 
-        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.INTENT_CLASSIFIER_MODEL.value))
+        # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.INTENT_CLASSIFIER_MODEL.value))
+        # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_DISTIL_INTENT_CLASSIFIER_MODEL.value)
+        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_INTENT_CLASSIFIER_MODEL.value)
         self.__model.to(self.__device)
 
         inputs = self.__tokenizer(user_input, return_tensors="pt", padding=True, truncation=True, max_length=512)
@@ -34,7 +38,7 @@ class IntentClassifier(metaclass=SingletonMeta):
         return response
 
 
-# user_query = "Can you tell me about the Apple Watch Series 9?"
-#
-# response = IntentClassifier().generate_response(user_query)
-# print("Intent:", response)
+user_query = "Can you find me a hotel in Berlin with a pool?"
+
+response = IntentClassifier().generate_response(user_query)
+print("Intent:", response)
