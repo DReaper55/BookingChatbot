@@ -1,6 +1,8 @@
 import os
 import sys
 
+from src.utils.asset_paths import AssetPaths
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.utils.env_keys import EnvKeys
@@ -47,7 +49,9 @@ class ContextTranslator(metaclass=SingletonMeta):
     def generate_response(self, user_input):
         from src.utils.helpers import load_t5_model_and_tokenizer
 
-        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.CONTEXT_TRANSLATOR_MODEL.value))
+        # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.CONTEXT_TRANSLATOR_MODEL.value))
+        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_DISTIL_CONTEXT_TRANSLATOR_MODEL_2.value)
+        # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_CONTEXT_TRANSLATOR_MODEL.value)
         self.__model.to(self.__device)
 
         if type(user_input) is not str:
@@ -69,7 +73,7 @@ class ContextTranslator(metaclass=SingletonMeta):
         return response
 
 
-# user_query = "User: I'm looking for a handbag. Bot: Do you have a preferred brand? User: Michael Kors. Bot: What color do you prefer? User: brown. Bot: What material or style do you prefer? User: canvas. Bot: I found several Michael Kors handbags in brown with canvas style. What's your budget? User: Under $250."
+user_query = "User: I'm looking for a handbag. Bot: Do you have a preferred brand? User: Michael Kors. Bot: What color do you prefer? User: brown. Bot: What material or style do you prefer? User: canvas. Bot: I found several Michael Kors handbags in brown with canvas style. What's your budget? User: Under $250."
 # user_query = "User: I'd like to get a new pair of shoes. Bot: Any specific brand preference? User: Maybe one from Nike. Bot: What size do you wear? User: Size 42 for men. Bot: Any price range you're considering? User: Something cheap would be nice."
 # user_query = """
 # User: I'm looking for a shirt

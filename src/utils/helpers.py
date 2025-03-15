@@ -85,9 +85,13 @@ def reformat_text(input_text):
         retrieved_match = re.search(r"Retrieved:\s*(.*)", input_text)
         retrieved_text = retrieved_match.group(1).strip() if retrieved_match else ""
 
+        # print(f'augmented_input 3: {retrieved_text}')
+
         # Process retrieved information
         retrieved_info = []
-        retrieved_pairs = re.findall(r"([\w-]+): ([^:]+?)(?=\s[\w-]+:|$)", retrieved_text)  # Ensure correct value capture
+        retrieved_pairs = re.findall(r"([\w-]+)=([^,]+?)(?=,\s[\w-]+=|$)", retrieved_text)  # Ensure correct value capture
+
+        # print(f'augmented_input 4: {retrieved_pairs}')
 
         for key, value in retrieved_pairs:
             value = value.strip()
@@ -153,8 +157,8 @@ def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
     MODEL_NAME = "google-t5/t5-small"  # Can use "t5-base" or "t5-large" for better performance
 
     if from_saved:
-        MODEL_NAME = get_path_to(model_path)
-        # MODEL_NAME = model_path
+        # MODEL_NAME = get_path_to(model_path)
+        MODEL_NAME = model_path
 
     config_params = {
         "num_layers": 4,
@@ -170,9 +174,9 @@ def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
     tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
     model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME).to(device)
     # model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME, config=config).to(device)
-    # model.half() # convert to FP16
+    model.half() # convert to FP16
 
-    # model.push_to_hub("DReaper/feature-extraction")
+    model.push_to_hub("DReaper/ecommerce-intent-classifier")
 
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
     return model, tokenizer, data_collator
@@ -187,14 +191,14 @@ def upload_model_to_huggingface():
     # Upload your model to your Hugging Face account
     api.upload_folder(
         folder_path=get_path_to(AssetPaths.T5_SLOT_FILLER_MODEL.value),
-        repo_id="DReaper/slot-filler",
+        repo_id="DReaper/slot-filler-large",
         repo_type="model"
     )
 
 
-# load_t5_model_and_tokenizer(True, get_path_to(AssetPaths.T5_BOOKING_MODEL.value))
+# load_t5_model_and_tokenizer(True, get_path_to(AssetPaths.T5_DISTIL_INTENT_CLASSIFIER_MODEL.value))
 
-# upload_model_to_huggingface()
+upload_model_to_huggingface()
 
 # input_string = '"author": null, "brand": "PayPal", "features": ["standard delivery", "yellow", "paypal", "casual"], "price": "$120", "product-type": "dress", "quantity": null, "size": "extra-large", "title": null, category: dress'
 # res = format_extracted_features(input_string)

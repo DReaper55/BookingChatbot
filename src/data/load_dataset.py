@@ -232,7 +232,7 @@ def load_rag_dataset(split_ratio=0.8, for_booking_finetune=True, for_intent_fine
     if for_booking_finetune:
         dataset = load_dataset(
             "json",
-            data_files=get_path_to(AssetPaths.SYNTHETIC_DATASET.value),
+            data_files=get_path_to(AssetPaths.UPDATED_RAG_DATASET.value),
             split="train",
             streaming=False
         ).map(lambda example: {"input": reformat_text(example['input'])})

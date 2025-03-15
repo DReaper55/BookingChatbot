@@ -11,6 +11,12 @@ class AssetPaths(Enum):
     T5_SLOT_FILLER_MODEL = 'models/t5_slot_filler_model' #
 
     T5_DISTIL_INTENT_CLASSIFIER_MODEL = 'models/t5_distil_intent_classifier_model' #
+    T5_DISTIL_CONTEXT_TRANSLATOR_MODEL = 'models/t5_distil_context_translator_model' #
+    T5_DISTIL_CONTEXT_TRANSLATOR_MODEL_2 = 'models/t5_distil_context_translator_model_2' #
+    T5_DISTIL_BOOKING_MODEL = 'models/t5_distil_booking_model' #
+    T5_DISTIL_BOOKING_MODEL_2 = 'models/t5_distil_booking_model_2' #
+    T5_DISTIL_SLOT_FILLER_MODEL = 'models/t5_distil_slot_filler' #
+    T5_DISTIL_FEATURE_EXTRACTION_MODEL = 'models/t5_distil_feature_extraction_model' #
 
     # Weights
 
@@ -23,6 +29,7 @@ class AssetPaths(Enum):
 
     RAW_SYNTHETIC_DATASET = 'data/raw/synthetic.txt'
     RAW_RAG_DATASET = 'data/raw/rag_dataset.json'
+    UPDATED_RAG_DATASET = 'data/raw/products_placeholder.json'
     PROCESSED_RAG_DATASET = 'data/processed/rag_dataset.json'
     # SYNTHETIC_DATASET = 'data/processed/synthetic.json'
     SYNTHETIC_DATASET = 'data/processed/modified_synthetic.json'

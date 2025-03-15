@@ -1,6 +1,8 @@
 import os
 import sys
 
+from src.utils.asset_paths import AssetPaths
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.utils.env_keys import EnvKeys
@@ -25,15 +27,17 @@ class BookingModel(metaclass=SingletonMeta):
         """
         from src.utils.helpers import load_t5_model_and_tokenizer
 
-        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.RAG_BASED_BOOKING_MODEL.value))
+        # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.RAG_BASED_BOOKING_MODEL.value))
+        # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_DISTIL_BOOKING_MODEL.value)
+        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_BOOKING_MODEL.value)
         self.__model.to(self.__device)
 
         # Format input for T5
         input_text = f"generate response: {user_input}. Intent: {active_intent}. Slots: {slot_values}. Retrieved: {retrieved}"
 
-        print(f'augmented_input 2: {input_text}')
-
         input_text = reformat_text(input_text)
+
+        print(f'augmented_input 2: {input_text}')
 
         # Tokenize input
         inputs = self.__tokenizer(input_text, return_tensors="pt", padding=True, truncation=True, max_length=512)
@@ -68,3 +72,13 @@ class BookingModel(metaclass=SingletonMeta):
 #
 # response = generate_response(user_query, active_intent, slot_values)
 # print("Bot:", response)
+
+model = BookingModel()
+
+user_input = "I'm looking for a denim jackets in size S"
+active_intent="find_product"
+slot_values="product-type=jacket, feature=denim, size=S"
+retrieved="feature=denim, available=20, price=$45, size=S"
+
+response = model.generate_response(user_input, active_intent, slot_values, retrieved)
+print("Bot:", response)
