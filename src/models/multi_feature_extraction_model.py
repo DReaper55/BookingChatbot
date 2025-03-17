@@ -18,20 +18,20 @@ def train_model(output_dir):
     # Load dataset
     train_dataloader, val_dataloader = load_feature_extraction_data()
 
-    def take_samples(dataloader, n):
-        return list(itertools.islice(dataloader, n))
-
-    # Take the first 3 samples from the eval DataLoader
-    sample_batch = take_samples(val_dataloader, 20)
-
-    # Print preprocessed examples
-    for i, sample in enumerate(sample_batch):
-        decoded_input = tokenizer.decode(sample["input_ids"], skip_special_tokens=True)
-        decoded_target = tokenizer.decode(sample["labels"], skip_special_tokens=True)
-
-        print(f"\nSample {i+1} --------------------")
-        print("Decoded Input:", decoded_input)
-        print("Decoded Target (Expected Response):", decoded_target)
+    # def take_samples(dataloader, n):
+    #     return list(itertools.islice(dataloader, n))
+    #
+    # # Take the first 3 samples from the eval DataLoader
+    # sample_batch = take_samples(val_dataloader, 20)
+    #
+    # # Print preprocessed examples
+    # for i, sample in enumerate(sample_batch):
+    #     decoded_input = tokenizer.decode(sample["input_ids"], skip_special_tokens=True)
+    #     decoded_target = tokenizer.decode(sample["labels"], skip_special_tokens=True)
+    #
+    #     print(f"\nSample {i+1} --------------------")
+    #     print("Decoded Input:", decoded_input)
+    #     print("Decoded Target (Expected Response):", decoded_target)
 
     # Take the first 3 samples from the dataset
     # sample_batch = list(val_dataloader.take(3))
@@ -46,34 +46,34 @@ def train_model(output_dir):
     #     print("Decoded Target (Expected Response):", decoded_target)
 
     # Define Training Arguments
-    # training_args = TrainingArguments(
-    #     output_dir=output_dir,
-    #     per_device_train_batch_size=8,
-    #     per_device_eval_batch_size=8,
-    #     num_train_epochs=5,
-    #     learning_rate=3e-4,
-    #     save_steps=500,
-    #     save_total_limit=2,
-    #     evaluation_strategy="epoch",
-    #     save_strategy="epoch",
-    #     fp16=True,
-    #     weight_decay=0.01,
-    # )
-    #
-    # # Trainer
-    # trainer = Trainer(
-    #     model=model,
-    #     args=training_args,
-    #     train_dataset=train_dataloader,
-    #     eval_dataset=val_dataloader,
-    #     tokenizer=tokenizer,
-    #     data_collator=data_collator
-    # )
-    #
-    # # Train
-    # trainer.train()
-    # model.save_pretrained(output_dir)
-    # tokenizer.save_pretrained(output_dir)
+    training_args = TrainingArguments(
+        output_dir=output_dir,
+        per_device_train_batch_size=8,
+        per_device_eval_batch_size=8,
+        num_train_epochs=5,
+        learning_rate=3e-4,
+        save_steps=500,
+        save_total_limit=2,
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
+        fp16=True,
+        weight_decay=0.01,
+    )
+
+    # Trainer
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataloader,
+        eval_dataset=val_dataloader,
+        tokenizer=tokenizer,
+        data_collator=data_collator
+    )
+
+    # Train
+    trainer.train()
+    model.save_pretrained(output_dir)
+    tokenizer.save_pretrained(output_dir)
 
 
-# train_model(get_path_to(AssetPaths.T5_MULTITASK_BOOKING_MODEL.value))
+train_model(get_path_to(AssetPaths.T5_MULTITASK_FEATURE_EXTRACTION_MODEL.value))

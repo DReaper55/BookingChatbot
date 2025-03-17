@@ -130,6 +130,10 @@ def load_data():
     # Use generator for dataset creation
     processed_dataset = Dataset.from_generator(generator)
 
+    # Display a few examples from the processed_dataset
+    # for example in processed_dataset.select(range(5)):  # Select the first 5 examples
+    #     print(example)
+
     # Apply preprocessing directly on processed_dataset
     processed_dataset = processed_dataset.map(preprocess_data, batched=True)
 

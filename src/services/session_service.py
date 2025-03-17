@@ -132,7 +132,8 @@ class SessionService(metaclass=SingletonMeta):
         session = self.db_service.find_one(MongoCollection.SESSIONS.value, {"user_id": user_id, "chat_id": chat_id}, {"_id": 0, "conversation": 1})
         return session["conversation"] if session else []
 
-    def __is_task_complete(self, structured_task: str) -> bool:
+    @staticmethod
+    def __is_task_complete(structured_task: str) -> bool:
         """Checks if the structured task is complete (ends with a period or has multiple sentences)."""
         return bool(re.search(r"\.\s|\.$", structured_task))
 

@@ -48,9 +48,9 @@ def load_booking_dataset():
     return train_dataset, dev_dataset
 
 
-def preprocess_fn(examples, prepend_input=None):
-    if prepend_input is not None:
-        inputs = [f"{prepend_input}: {conv}" for conv in examples["input"]]
+def preprocess_fn(examples, prepend_task=None):
+    if prepend_task is not None:
+        inputs = [f"{prepend_task}: {conv}" for conv in examples["input"]]
     else:
         inputs = examples["input"]
 
@@ -215,8 +215,8 @@ def load_feature_extraction_data():
     # Split the dataset
     train_dataset, eval_dataset = random_split(dataset, [train_length, eval_length])
 
-    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-    eval_dataloader = DataLoader(eval_dataset, batch_size=32, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=8, shuffle=True)
+    eval_dataloader = DataLoader(eval_dataset, batch_size=8, shuffle=False)
 
     return train_dataloader.dataset, eval_dataloader.dataset
 
@@ -225,7 +225,7 @@ def load_feature_extraction_data():
 # Load and preprocess data for RAG-based
 # training
 # ..........................................
-def load_rag_dataset(split_ratio=0.8, for_booking_finetune=True, for_intent_finetune=False, for_slot_finetune=False):
+def load_finetune_dataset(split_ratio=0.8, for_booking_finetune=True, for_intent_finetune=False, for_slot_finetune=False):
     dataset = None
 
     # Load local dataset in streaming mode

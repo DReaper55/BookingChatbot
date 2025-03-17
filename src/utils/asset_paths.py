@@ -17,6 +17,7 @@ class AssetPaths(Enum):
     T5_DISTIL_BOOKING_MODEL_2 = 'models/t5_distil_booking_model_2' #
     T5_DISTIL_SLOT_FILLER_MODEL = 'models/t5_distil_slot_filler' #
     T5_DISTIL_FEATURE_EXTRACTION_MODEL = 'models/t5_distil_feature_extraction_model' #
+    T5_DISTIL_FEATURE_EXTRACTION_MODEL_2 = 'models/t5_distil_feature_extraction_model_2' #
 
     # Weights
 

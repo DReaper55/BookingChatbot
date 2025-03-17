@@ -22,8 +22,7 @@ class SlotFiller(metaclass=SingletonMeta):
         """Fills missing slots by generating a response."""
         from src.utils.helpers import load_t5_model_and_tokenizer
 
-        # self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.SLOT_FILLER_MODEL.value))
-        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, AssetPaths.T5_DISTIL_SLOT_FILLER_MODEL.value)
+        self.__model, self.__tokenizer, _ = load_t5_model_and_tokenizer(True, os.getenv(EnvKeys.SLOT_FILLER_MODEL.value))
         self.__model.to(self.__device)
 
         user_input = f"ask question: {user_input}"
@@ -37,10 +36,10 @@ class SlotFiller(metaclass=SingletonMeta):
         return response
 
 
-user_query = "User: I'm looking for a handbag. Bot: Do you have a preferred brand? User: Michael Kors. Bot: What color do you prefer? User: brown. Bot: What material or style do you prefer? User: canvas. Bot: I found several Michael Kors handbags in brown with canvas style. What's your budget? User: Under $250."
-# user_query = "User: I'd like to get a new pair of shoes. Bot: Any specific brand preference? User: Maybe one from Nike. Bot: What size do you wear? User: Size 42 for men. Bot: Any price range you're considering? User: Something cheap would be nice."
-
-slot_filler = SlotFiller()
-
-response = slot_filler.generate_response(user_query)
-print("Bot:", response)
+# user_query = "User: I'm looking for a handbag. Bot: Do you have a preferred brand? User: Michael Kors. Bot: What color do you prefer? User: brown. Bot: What material or style do you prefer? User: canvas. Bot: I found several Michael Kors handbags in brown with canvas style. What's your budget? User: Under $250."
+# # user_query = "User: I'd like to get a new pair of shoes. Bot: Any specific brand preference? User: Maybe one from Nike. Bot: What size do you wear? User: Size 42 for men. Bot: Any price range you're considering? User: Something cheap would be nice."
+#
+# slot_filler = SlotFiller()
+#
+# response = slot_filler.generate_response(user_query)
+# print("Bot:", response)

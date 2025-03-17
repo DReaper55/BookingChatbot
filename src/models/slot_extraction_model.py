@@ -6,18 +6,20 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.data.load_dataset import load_slot_extraction_dataset, load_rag_dataset
+from src.data.load_dataset import load_slot_extraction_dataset, load_finetune_dataset
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import load_t5_model_and_tokenizer, get_path_to
 
 
 def train_model(output_dir):
     # Load model
-    model, tokenizer, data_collator = load_t5_model_and_tokenizer(True, get_path_to(AssetPaths.T5_SLOT_EXTRACTION_MODEL.value))
+    model, tokenizer, data_collator = load_t5_model_and_tokenizer()
 
     # Load dataset
-    # train_dataloader, val_dataloader = load_slot_extraction_dataset()
-    train_dataloader, val_dataloader = load_rag_dataset(for_slot_finetune=True)
+    train_dataloader, val_dataloader = load_slot_extraction_dataset()
+
+    # Load dataset to further finetune slot-extraction model
+    # train_dataloader, val_dataloader = load_finetune_dataset(for_slot_finetune=True)
 
     # Take the first 3 samples from the dataset
     # sample_batch = list(train_dataloader.take(3))
@@ -76,4 +78,4 @@ def train_model(output_dir):
     tokenizer.save_pretrained(output_dir)
 
 
-# train_model(get_path_to(AssetPaths.T5_SLOT_EXTRACTION_MODEL.value))
+train_model(get_path_to(AssetPaths.T5_SLOT_EXTRACTION_MODEL.value))

@@ -22,11 +22,13 @@ class ProductsRetrievalService:
                  mongo_uri=os.getenv(EnvKeys.MONGO_CLUSTER.value),
                  mongo_db=os.getenv(EnvKeys.MONGO_DB.value),
                  mongo_collection=MongoCollection.PRODUCTS.value,
-                 opensearch_host="localhost",
-                 opensearch_port=os.getenv(EnvKeys.OPENSEARCH_PORT.value),
-                 opensearch_index=os.getenv(EnvKeys.OPENSEARCH_INDEX_NAME.value),
-                 opensearch_user=os.getenv(EnvKeys.OPENSEARCH_USERNAME.value),
-                 opensearch_password=os.getenv(EnvKeys.OPENSEARCH_PASSWORD.value),
+
+                 # Set up opensearch credentials
+                 # opensearch_host=os.getenv(EnvKeys.OPENSEARCH_HOST.value),
+                 # opensearch_port=os.getenv(EnvKeys.OPENSEARCH_PORT.value),
+                 # opensearch_index=os.getenv(EnvKeys.OPENSEARCH_INDEX_NAME.value),
+                 # opensearch_user=os.getenv(EnvKeys.OPENSEARCH_USERNAME.value),
+                 # opensearch_password=os.getenv(EnvKeys.OPENSEARCH_PASSWORD.value),
                  ):
 
         # MongoDB Connection
@@ -34,19 +36,11 @@ class ProductsRetrievalService:
         self.db = self.mongo_client[mongo_db]
         self.collection = self.db[mongo_collection]
 
-        # Ensure text index is created on relevant fields
-        # self.collection.create_index([
-        #     ("category", "text"),  # Text index for full-text search
-        #     ("brand", "text"),     # Text index for full-text search
-        # ])
 
-        # Multi-key index for efficient filtering on array fields
-        # self.collection.create_index("category")
-        # self.collection.create_index("brand")
-        # self.collection.create_index("features")
-        # self.collection.create_index("size")
-
-
+    # ....................................
+    # Use OpenSearch for indexing and query
+    # Initial connection when app starts
+    # ....................................
     # # OpenSearch Connection
         # self.opensearch_client = OpenSearch(
         #     hosts=[{"host": opensearch_host, "port": opensearch_port}],
@@ -87,6 +81,9 @@ class ProductsRetrievalService:
         # if not self.opensearch_client.indices.exists(index=self.index_name):
         #     self.opensearch_client.indices.create(index=self.index_name, body=self.index_body)
 
+    # ....................................
+    # Sync mongo to opensearch
+    # ....................................
     # def sync_mongo_to_opensearch(self):
     #     """Fetches data from MongoDB and indexes it into OpenSearch."""
     #     for product in self.collection.find():
@@ -110,6 +107,9 @@ class ProductsRetrievalService:
     #
     #     print("Sync Completed! MongoDB Data Indexed in OpenSearch")
 
+    # ....................................
+    # Query opensearch for a product
+    # ....................................
     # def search_products(self, query, filters=None, size=5):
     #     """
     #     Searches for products in OpenSearch.
@@ -188,6 +188,10 @@ class ProductsRetrievalService:
     #         print(f"OpenSearch Query Error: {e}")
     #         return []
 
+    # ....................................
+    # Search Mongodb for product using
+    # Mongo search index
+    # ....................................
     def search_products(self, query, filters=None, size=10):
         import logging
 
@@ -239,16 +243,16 @@ class ProductsRetrievalService:
         """
         Generic method to find a product based on the product type and filters.
         """
-        author = kwargs["filter"].get("author", None)
-        price = kwargs["filter"].get("price", None)
-        quantity = kwargs["filter"].get("quantity", 1)
-        title = kwargs["filter"].get("title", None)
-        brand = kwargs["filter"].get("brand", None)
-        size = kwargs["filter"].get("size", None)
-        category = kwargs["filter"].get("category", product_type)
+        author = kwargs.get("author", None)
+        price = kwargs.get("price", None)
+        quantity = kwargs.get("quantity", 1)
+        title = kwargs.get("title", None)
+        brand = kwargs.get("brand", None)
+        size = kwargs.get("size", None)
+        category = kwargs.get("category", product_type)
 
         # List to store the values of keys that contain the word 'feature'
-        features = [value for key, value in kwargs["filter"].items() if 'feature' in key]
+        features = [value for key, value in kwargs.items() if 'feature' in key]
 
         # Build filters dynamically
         filters = {
@@ -282,7 +286,6 @@ class ProductsRetrievalService:
 
         # Use collaborative filtering to get top 5 recommendations
         # recommended_products = get_cf_recommendations(get_user_id(), filtered_products)
-        #
         # print(recommended_products)
 
         product = filtered_products[0]
@@ -298,7 +301,7 @@ class ProductsRetrievalService:
 
 
 def get_user_id():
-    return "ce81c9bd-fa1d-4ddc-a61d-6b9722977194" # Sophia
+    return "0123"
 
 def get_best_product(products):
     """
@@ -319,15 +322,15 @@ def get_best_product(products):
     )
 
 # Example Usage
-if __name__ == "__main__":
-    product_service = ProductsRetrievalService()
-
-#     Sync MongoDB to OpenSearch
-#     product_service.sync_mongo_to_opensearch()
-
-    filt = {'author': 'null', 'brand': 'Wrangler', 'feature-blue': 'blue', 'feature-denim': 'denim', 'feature-regular': 'regular', 'price': 'null', 'product-type': 'null', 'quantity': 'null', 'size': 'M', 'title': 'null', 'category': 'pants'}
-
-#     Search for "Nike Shoes"
-#     results = product_service.search_products("Adidas Shirt", filt)
-    results = product_service.retrieve_formatted_result("pants", filter=filt)
-    print(results)
+# if __name__ == "__main__":
+#     product_service = ProductsRetrievalService()
+#
+# #     Sync MongoDB to OpenSearch
+# #     product_service.sync_mongo_to_opensearch()
+#
+#     filter = {'author': 'null', 'brand': 'Wrangler', 'feature-blue': 'blue', 'feature-denim': 'denim', 'feature-regular': 'regular', 'price': 'null', 'product-type': 'null', 'quantity': 'null', 'size': 'M', 'title': 'null', 'category': 'pants'}
+#
+# #     Search for "Nike Shoes"
+# #     results = product_service.search_products("Adidas Shirt", filter)
+#     results = product_service.retrieve_formatted_result("pants", filter=filter)
+#     print(results)

@@ -6,14 +6,14 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.data.load_dataset import load_context_translation_dataset, load_rag_dataset
+from src.data.load_dataset import load_context_translation_dataset, load_finetune_dataset
 from src.utils.asset_paths import AssetPaths
 from src.utils.helpers import load_t5_model_and_tokenizer, get_path_to
 
 
 def train_model(output_dir):
     # Load model
-    model, tokenizer, data_collator = load_t5_model_and_tokenizer(True, AssetPaths.T5_DISTIL_CONTEXT_TRANSLATOR_MODEL.value)
+    model, tokenizer, data_collator = load_t5_model_and_tokenizer()
 
     # Load dataset
     train_dataloader, val_dataloader = load_context_translation_dataset()
@@ -75,4 +75,4 @@ def train_model(output_dir):
     tokenizer.save_pretrained(output_dir)
 
 
-train_model(get_path_to(AssetPaths.T5_DISTIL_CONTEXT_TRANSLATOR_MODEL_2.value))
+train_model(get_path_to(AssetPaths.T5_CONTEXT_TRANSLATOR_MODEL.value))

@@ -1,6 +1,8 @@
 import os
 import sys
 
+from src.utils.asset_paths import AssetPaths
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.utils.env_keys import EnvKeys
@@ -68,8 +70,7 @@ class FeatureExtraction(metaclass=SingletonMeta):
 
 
 
-# user_input = "I want to get a green shirt in medium size that's for biking"
-# user_input = "Buy a yellow casual dress in extra-large size for $120 with PayPal and standard delivery."
-# # result = extract_features(user_input)
+# user_input = "Find a blue Dell shirt in size XL under $387."
+# # user_input = "Buy a yellow casual dress in extra-large size for $120 with PayPal and standard delivery."
 # result = FeatureExtraction().extract_features(user_input)
 # print(result)

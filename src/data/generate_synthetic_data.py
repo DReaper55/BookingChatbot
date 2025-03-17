@@ -36,7 +36,7 @@ def generate_train_synthetic_data():
     return dataset
 
 
-# Function to create synthetic dataset
+# Function to create synthetic hotel dataset
 def generate_synthetic_data():
     user_queries, retrieved_data_samples = get_hotel_queries()
 
@@ -64,7 +64,7 @@ def generate_synthetic_data():
 
     return dataset
 
-
+# Function to create synthetic product dataset
 def generate_synthetic_find_product_data(num_samples=10):
     product_types = ["shirt", "shoe", "jacket", "accessory", "pants", "electronics", "dress", "toy", "book", "furniture"]
     features = ["red", "blue", "cotton", "leather", "waterproof", "wireless", "bodycon", "loose-fit", "gaming", "handmade"]

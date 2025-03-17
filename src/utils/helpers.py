@@ -16,13 +16,9 @@ def get_path_to(dir):
     return os.path.join(project_root, dir)
 
 
-def clean_text(text):
-    text = text.lower()  # Convert to lowercase
-    text = re.sub(r"[^a-zA-ZÀ-ÿ0-9.,!?\'\s-]", "", text)  # Remove special characters
-    text = re.sub(r"\s+", " ", text).strip()  # Remove extra spaces
-    return text
-
-
+# ......................................
+# Extract text and intent from an example
+# ......................................
 def extract_text_and_intent(data):
     input_text = data["input"]
 
@@ -37,13 +33,15 @@ def extract_text_and_intent(data):
     return {"input": text, "output": intent}
 
 
+# ......................................
+# Extract text and slots from an example
+# ......................................
 def extract_slots(data):
     # Extract user input after "generate response:"
     input_text = re.search(r"generate response:\s*(.*?)\s*Intent:", data["input"])
     input_text = input_text.group(1).strip() if input_text else ""
 
     # Extract slot-value pairs
-    # slots_match = re.search(r"Slots:\s*(.*)", data["input"])
     slots_match = re.search(r"Slots:\s*(.*?)(?:Retrieved:|$)", data["input"])
     slots_text = slots_match.group(1).strip() if slots_match else ""
 
@@ -67,6 +65,9 @@ def extract_slots(data):
         "output": slot_output
     }
 
+# ......................................
+# Format input text for training
+# ......................................
 def reformat_text(input_text):
         # Extract user input
         user_input_match = re.search(r"generate response:\s*(.*?)\s*Intent:", input_text)
@@ -85,13 +86,9 @@ def reformat_text(input_text):
         retrieved_match = re.search(r"Retrieved:\s*(.*)", input_text)
         retrieved_text = retrieved_match.group(1).strip() if retrieved_match else ""
 
-        # print(f'augmented_input 3: {retrieved_text}')
-
         # Process retrieved information
         retrieved_info = []
         retrieved_pairs = re.findall(r"([\w-]+)=([^,]+?)(?=,\s[\w-]+=|$)", retrieved_text)  # Ensure correct value capture
-
-        # print(f'augmented_input 4: {retrieved_pairs}')
 
         for key, value in retrieved_pairs:
             value = value.strip()
@@ -108,6 +105,9 @@ def reformat_text(input_text):
         return formatted_text
 
 
+# ......................................
+# Format search result to model's input
+# ......................................
 def format_extracted_features(input_string, is_json=False):
     product_info = input_string
 
@@ -148,40 +148,34 @@ def format_extracted_features(input_string, is_json=False):
     # Join the formatted key-value pairs with commas
     return ", ".join(formatted_info)
 
-def load_t5_model_and_tokenizer(from_saved=False, model_path=""):
+
+# ......................................
+# Load model and tokenizer
+# ......................................
+def load_t5_model_and_tokenizer(from_saved=False, model_path=None):
     from transformers import T5ForConditionalGeneration, T5Tokenizer, T5Config, DataCollatorForSeq2Seq
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Define model and tokenizer
-    MODEL_NAME = "google-t5/t5-small"  # Can use "t5-base" or "t5-large" for better performance
+    MODEL_NAME = model_path or "google-t5/t5-small"  # Can use "t5-base" or "t5-large" for better performance
 
     if from_saved:
-        # MODEL_NAME = get_path_to(model_path)
-        MODEL_NAME = model_path
-
-    config_params = {
-        "num_layers": 4,
-        # "num_decoder_layers": 3,
-        # "num_heads": 5,
-        # "d_model": 256,
-        # "d_ff": 1024,
-    }
-
-    # Reduce the number of layers
-    # config = T5Config.from_pretrained(MODEL_NAME, **config_params)
+        MODEL_NAME = get_path_to(model_path)
 
     tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
     model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME).to(device)
-    # model = T5ForConditionalGeneration.from_pretrained(MODEL_NAME, config=config).to(device)
     model.half() # convert to FP16
 
-    model.push_to_hub("DReaper/ecommerce-intent-classifier")
+    # model.push_to_hub("DReaper/feature-extraction-large")
 
     data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
     return model, tokenizer, data_collator
 
 
+# ......................................
+# Upload a model to huggingface
+# ......................................
 def upload_model_to_huggingface():
     from huggingface_hub import HfApi
 
@@ -190,27 +184,12 @@ def upload_model_to_huggingface():
 
     # Upload your model to your Hugging Face account
     api.upload_folder(
-        folder_path=get_path_to(AssetPaths.T5_SLOT_FILLER_MODEL.value),
-        repo_id="DReaper/slot-filler-large",
+        folder_path=get_path_to(AssetPaths.T5_MULTITASK_FEATURE_EXTRACTION_MODEL.value),
+        repo_id="DReaper/feature-extraction-large",
         repo_type="model"
     )
 
 
-# load_t5_model_and_tokenizer(True, get_path_to(AssetPaths.T5_DISTIL_INTENT_CLASSIFIER_MODEL.value))
+load_t5_model_and_tokenizer(True, get_path_to(AssetPaths.T5_MULTITASK_FEATURE_EXTRACTION_MODEL.value))
 
-upload_model_to_huggingface()
-
-# input_string = '"author": null, "brand": "PayPal", "features": ["standard delivery", "yellow", "paypal", "casual"], "price": "$120", "product-type": "dress", "quantity": null, "size": "extra-large", "title": null, category: dress'
-# res = format_extracted_features(input_string)
-#
-# slots = {}
-# for pair in res.split(", "):
-#     if "=" in pair:
-#         key, value = pair.split("=", 1)
-#         slots[key.strip()] = value.strip()
-#
-# # List to store the values of keys that contain the word 'feature'
-# feature_values = [value for key, value in slots.items() if 'feature' in key]
-#
-# print(slots)
-# print(feature_values)
+# upload_model_to_huggingface()

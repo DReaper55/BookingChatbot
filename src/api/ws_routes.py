@@ -29,7 +29,7 @@ async def send_recommendations(websocket: WebSocket, user_id: str):
     try:
         while True:
             # Fetch recommendations dynamically
-            # recommendations = get_cf_recommendations(user_id)
+            # recommendations = get_cf_recommendations(user_id) # todo: Improve recommendation intent discovery
             # await websocket.send_json(recommendations)
             await websocket.send_json("No recommendations found")
             await asyncio.sleep(5)  # Send updates every 5 seconds
